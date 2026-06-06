@@ -1,0 +1,7 @@
+allowBuilds:
+  '@firebase/util': true
+  '@prisma/engines': true
+  msw: false
+  prisma: true
+  protobufjs: true
+  sharp: false

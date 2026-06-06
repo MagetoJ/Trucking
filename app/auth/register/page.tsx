@@ -278,7 +278,10 @@ function RegisterContent() {
                 </Button>
                 <Button
                   type="button"
-                  onClick={() => setStep(3)}
+                  onClick={() => {
+                    setError('')
+                    if (validateStep2()) setStep(3)
+                  }}
                   className="flex-1 bg-accent hover:bg-accent/90 text-primary font-bold"
                 >
                   Next

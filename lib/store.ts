@@ -1,28 +1,34 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 
+// Define types for your store state and actions
 export type UserRole = 'shipper' | 'driver'
 
-export interface User {
+interface User {
   id: string
   name: string
   phone: string
-  email?: string
+  email: string
   role: UserRole
-  avatar?: string
-  rating: number
-  verified: boolean
-  createdAt: string
+  // Add other user properties as needed
 }
 
-export interface AuthState {
+interface RegisterData {
+  name: string
+  phone: string
+  email: string
+  password: string
+  role: UserRole
+}
+
+interface AuthState {
   user: User | null
   token: string | null
   isLoading: boolean
   login: (phone: string, password: string) => Promise<void>
-  register: (data: Omit<User, 'id' | 'rating' | 'verified' | 'createdAt'> & { password: string }) => Promise<void>
+  register: (userData: RegisterData) => Promise<void>
   logout: () => void
-  setUser: (user: User | null) => void
+  setUser: (user: User) => void
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -31,7 +37,8 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       isLoading: false,
-      login: async (phone, password) => {
+
+      login: async (phone: string, password: string) => {
         set({ isLoading: true })
         try {
           const response = await fetch('/api/auth/login', {
@@ -39,36 +46,53 @@ export const useAuthStore = create<AuthState>()(
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ phone, password }),
           })
+          
+          if (!response.ok) {
+            const errorMsg = await response.json()
+            throw new Error(errorMsg.error || 'Authentication failure')
+          }
+          
           const data = await response.json()
           set({ user: data.user, token: data.token, isLoading: false })
-        } catch (error) {
-          console.error('Login failed:', error)
+        } catch (error: any) {
           set({ isLoading: false })
           throw error
         }
       },
-      register: async (data) => {
+
+      register: async (userData: RegisterData) => {
         set({ isLoading: true })
         try {
           const response = await fetch('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
+            body: JSON.stringify(userData),
           })
-          const result = await response.json()
-          set({ user: result.user, token: result.token, isLoading: false })
-        } catch (error) {
-          console.error('Registration failed:', error)
+
+          if (!response.ok) {
+            const errorMsg = await response.json()
+            throw new Error(errorMsg.error || 'Registration failed')
+          }
+
+          const data = await response.json()
+          set({ user: data.user, token: data.token, isLoading: false })
+        } catch (error: any) {
           set({ isLoading: false })
           throw error
         }
       },
-      logout: () => set({ user: null, token: null }),
-      setUser: (user) => set({ user }),
+
+      logout: () => {
+        set({ user: null, token: null })
+      },
+
+      setUser: (user: User) => {
+        set({ user })
+      },
     }),
     {
-      name: 'auth-store',
-      partialize: (state) => ({ user: state.user, token: state.token }),
+      name: 'auth-storage', // unique name
+      storage: createJSONStorage(() => localStorage), // (optional) by default, 'localStorage' is used
     }
   )
 )

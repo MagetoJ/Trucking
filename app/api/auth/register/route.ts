@@ -1,78 +1,87 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { db } from '@/lib/db'
+import bcrypt from 'bcryptjs'
+import { parsePhoneNumberFromString } from 'libphonenumber-js'
+import jwt from 'jsonwebtoken'
 
-// Mock storage for bookings/trips
-let mockBookings: any[] = [
-  {
-    id: 'BK-101',
-    shipperId: '1',
-    origin: 'Nairobi',
-    destination: 'Mombasa',
-    cargo: 'Electronics',
-    weight: '5 Tons',
-    price: '$450',
-    status: 'In Transit',
-    date: '2024-05-20',
-    driverId: '2',
-  },
-  {
-    id: 'BK-102',
-    shipperId: '1',
-    origin: 'Nakuru',
-    destination: 'Nairobi',
-    cargo: 'Agricultural Produce',
-    weight: '2 Tons',
-    price: '$180',
-    status: 'Pending',
-    date: '2024-05-22',
-  }
-];
-
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
-  const role = searchParams.get('role')
-  const userId = searchParams.get('userId')
-
-  let filtered = [...mockBookings]
-
-  // Filter based on user role and ID
-  if (role === 'shipper' && userId) {
-    filtered = filtered.filter(b => b.shipperId === userId)
-  } else if (role === 'driver' && userId) {
-    // Drivers see their own active trips or available 'Pending' loads
-    filtered = filtered.filter(b => b.driverId === userId || b.status === 'Pending')
-  }
-
-  return NextResponse.json(filtered)
-}
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-super-secret-key'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { shipperId, origin, destination, cargo, weight, price } = body
+    const { name, phone, email, password, role } = body
 
-    if (!shipperId || !origin || !destination) {
-      return NextResponse.json({ error: 'Missing required shipment details' }, { status: 400 })
+    if (!name || !phone || !email || !password || !role) {
+      return NextResponse.json({ error: 'Missing parameters' }, { status: 400 })
     }
 
-    const newBooking = {
-      id: `BK-${Math.floor(Math.random() * 900) + 100}`,
-      shipperId,
-      origin,
-      destination,
-      cargo: cargo || 'General Goods',
-      weight: weight || 'N/A',
-      price: price || 'Negotiable',
-      status: 'Pending',
-      date: new Date().toISOString().split('T')[0],
+    const phoneNumber = parsePhoneNumberFromString(phone, 'KE')
+    const formattedPhone = phoneNumber ? phoneNumber.number : phone
+
+    // Enforce business unique-constraints
+    const existingUser = await db.user.findFirst({
+      where: {
+        OR: [ { phone: formattedPhone }, { email: email } ]
+      }
+    })
+
+    if (existingUser) {
+      return NextResponse.json({ error: 'Account with phone or email already exists' }, { status: 409 })
     }
 
-    mockBookings.push(newBooking)
+    const hashedPassword = await bcrypt.hash(password, 12)
 
-    return NextResponse.json(newBooking, { status: 201 })
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to create booking' },
-      { status: 500 }
+    const newUser = await db.user.create({
+      data: {
+        name,
+        phone: formattedPhone,
+        email,
+        password: hashedPassword,
+        role: role.toUpperCase() === 'DRIVER' ? 'DRIVER' : 'SHIPPER'
+      }
+    })
+
+    // If role is a driver, set up an initial blank placeholder vehicle instance
+    if (newUser.role === 'DRIVER') {
+      await db.vehicle.create({
+        data: {
+          driverId: newUser.id,
+          type: 'Box Truck 5-Ton',
+          plate: 'K' + Math.random().toString(36).substring(2, 7).toUpperCase(),
+          capacity: '5000kg'
+        }
+      })
+    }
+
+    const { password: _, ...safeUser } = newUser
+
+    // Generate token so user is authenticated immediately
+    const token = jwt.sign(
+      { id: newUser.id, role: newUser.role, phone: newUser.phone },
+      JWT_SECRET,
+      { expiresIn: '7d' }
     )
+
+    const response = NextResponse.json({
+      user: {
+        ...safeUser,
+        role: safeUser.role.toLowerCase()
+      },
+      token,
+      msg: 'Verification pending'
+    }, { status: 201 })
+
+    response.cookies.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/'
+    })
+
+    return response
+
+  } catch (error) {
+    console.error('Registration API crash:', error)
+    return NextResponse.json({ error: 'Failed execution' }, { status: 500 })
   }
 }

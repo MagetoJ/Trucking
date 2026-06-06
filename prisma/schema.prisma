@@ -1,0 +1,73 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  SHIPPER
+  DRIVER
+}
+
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  PICKED_UP
+  IN_TRANSIT
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id           String        @id @default(uuid())
+  phone        String        @unique
+  password     String
+  name         String
+  email        String        @unique
+  role         Role
+  rating       Float         @default(5.0)
+  verified     Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  
+  // Relations
+  shipments    Booking[]     @relation("ShipperBookings")
+  trips        Booking[]     @relation("DriverTrips")
+  vehicles     Vehicle[]
+}
+
+model Vehicle {
+  id         String    @id @default(uuid())
+  driverId   String
+  driver     User      @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  type       String    // e.g., "32-Ton Truck", "Flatbed"
+  plate      String    @unique
+  capacity   String    // Capacity threshold matching freight
+  status     String    @default("ACTIVE") // ACTIVE, STANDBY, MAINTENANCE
+  createdAt  DateTime  @default(now())
+  bookings   Booking[]
+}
+
+model Booking {
+  id          Int           @id @default(autoincrement())
+  shipperId   String
+  shipper     User          @relation("ShipperBookings", fields: [shipperId], references: [id])
+  driverId    String?
+  driver      User?         @relation("DriverTrips", fields: [driverId], references: [id])
+  vehicleId   String?
+  vehicle     Vehicle?      @relation(fields: [vehicleId], references: [id])
+  
+  origin      String
+  destination String
+  cargo       String
+  weight      String
+  price       String        // Managed string format (e.g. "$450") or Float/Decimal
+  status      BookingStatus @default(PENDING)
+  progress    Int           @default(0)
+  eta         String        @default("TBD")
+  date        String        // format matching your UI "YYYY-MM-DD"
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
