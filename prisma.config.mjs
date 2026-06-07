@@ -3,6 +3,6 @@ import { defineConfig } from 'prisma'
 export default defineConfig({
   schema: './prisma/schema.prisma',
   datasource: {
-    url: process.env.DATABASE_URL || "postgresql://truck_hauling_user:KtKBjRlWuEfkJ1aglMvPLE6DWJyqqCKC@dpg-d8i368uq1p3s73e9ovpg-a.oregon-postgres.render.com/truck_hauling",
+    url: process.env.DATABASE_URL,
   },
 })
