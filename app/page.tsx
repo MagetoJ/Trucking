@@ -1,10 +1,15 @@
 'use client'
 
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Truck, MapPin, Users, ShieldCheck, Zap, ArrowRight, Package, Clock, Shield, Star, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
+import RegisterModal from '@/components/auth-modal'
+import LoginModal from '@/components/login-modal'
 
 export default function Page() {
+  const [activeAuthModal, setActiveAuthModal] = useState<'none' | 'login' | 'register'>('none')
+
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       {/* Navigation */}
@@ -25,16 +30,19 @@ export default function Page() {
           </div>
 
           <div className="flex gap-4">
-            <Link href="/auth/login">
-              <Button variant="ghost" className="text-primary hover:bg-primary/5 font-semibold">
-                Login
-              </Button>
-            </Link>
-            <Link href="/auth/register">
-              <Button className="bg-accent hover:bg-accent/90 text-white font-bold">
-                Sign Up
-              </Button>
-            </Link>
+            <Button 
+              variant="ghost" 
+              className="text-primary hover:bg-primary/5 font-semibold"
+              onClick={() => setActiveAuthModal('login')}
+            >
+              Login
+            </Button>
+            <Button 
+              onClick={() => setActiveAuthModal('register')}
+              className="bg-accent hover:bg-accent/90 text-white font-bold"
+            >
+              Sign Up
+            </Button>
           </div>
         </div>
       </nav>
@@ -60,17 +68,22 @@ export default function Page() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <Link href="/auth/register?role=shipper" className="w-full sm:w-auto">
-              <Button size="lg" className="bg-accent hover:bg-accent/90 text-white font-bold text-xl px-10 py-8 h-auto w-full">
-                Find a Truck
-                <ArrowRight className="ml-2 w-6 h-6" />
-              </Button>
-            </Link>
-            <Link href="/auth/register?role=driver" className="w-full sm:w-auto">
-              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 font-bold text-xl px-10 py-8 h-auto w-full">
-                Drive & Earn
-              </Button>
-            </Link>
+            <Button 
+              size="lg" 
+              onClick={() => setActiveAuthModal('register')}
+              className="bg-accent hover:bg-accent/90 text-white font-bold text-xl px-10 py-8 h-auto w-full sm:w-auto"
+            >
+              Find a Truck
+              <ArrowRight className="ml-2 w-6 h-6" />
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              onClick={() => setActiveAuthModal('register')}
+              className="border-white/30 text-white hover:bg-white/10 font-bold text-xl px-10 py-8 h-auto w-full sm:w-auto"
+            >
+              Drive & Earn
+            </Button>
           </div>
         </div>
       </section>
@@ -114,9 +127,13 @@ export default function Page() {
                   </li>
                 ))}
               </ul>
-              <Link href="/auth/register?role=shipper">
-                <Button variant="outline" className="w-full py-6 text-lg border-accent text-accent hover:bg-accent/5">Get Started as Shipper</Button>
-              </Link>
+              <Button 
+                variant="outline" 
+                className="w-full py-6 text-lg border-accent text-accent hover:bg-accent/5"
+                onClick={() => setActiveAuthModal('register')}
+              >
+                Get Started as Shipper
+              </Button>
             </div>
 
             <div className="bg-white rounded-3xl p-10 shadow-sm border border-primary/5">
@@ -138,9 +155,12 @@ export default function Page() {
                   </li>
                 ))}
               </ul>
-              <Link href="/auth/register?role=driver">
-                <Button className="w-full py-6 text-lg bg-primary hover:bg-primary/90 text-white">Apply to Drive</Button>
-              </Link>
+              <Button 
+                className="w-full py-6 text-lg bg-primary hover:bg-primary/90 text-white"
+                onClick={() => setActiveAuthModal('register')}
+              >
+                Apply to Drive
+              </Button>
             </div>
           </div>
         </div>
@@ -184,12 +204,19 @@ export default function Page() {
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Ready to scale your logistics?</h2>
           <p className="text-white/70 text-xl mb-10 max-w-2xl mx-auto">Join the future of freight transport. Create your account today and experience the difference.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/auth/register">
-              <Button className="bg-accent hover:bg-accent/90 text-white font-bold text-xl px-12 py-8 h-auto">Get Started Now</Button>
-            </Link>
-            <Link href="/auth/login">
-              <Button variant="outline" className="border-white/30 text-white hover:bg-white/10 font-bold text-xl px-12 py-8 h-auto">Sign In</Button>
-            </Link>
+            <Button 
+              onClick={() => setActiveAuthModal('register')} 
+              className="bg-accent hover:bg-accent/90 text-white font-bold text-xl px-12 py-8 h-auto"
+            >
+              Get Started Now
+            </Button>
+            <Button 
+              variant="outline" 
+              className="border-white/30 text-white hover:bg-white/10 font-bold text-xl px-12 py-8 h-auto"
+              onClick={() => setActiveAuthModal('login')}
+            >
+              Sign In
+            </Button>
           </div>
         </div>
       </section>
@@ -204,6 +231,22 @@ export default function Page() {
           <p>© {new Date().getFullYear()} TruckHub Logistics Platform. All rights reserved.</p>
         </div>
       </footer>
+
+      {/* Auth Modals */}
+      {activeAuthModal === 'login' && (
+        <LoginModal 
+          isOpen={true} 
+          onClose={() => setActiveAuthModal('none')} 
+          onToggleView={() => setActiveAuthModal('register')} 
+        />
+      )}
+      {activeAuthModal === 'register' && (
+        <RegisterModal 
+          isOpen={true} 
+          onClose={() => setActiveAuthModal('none')} 
+          onToggleView={() => setActiveAuthModal('login')} 
+        />
+      )}
     </div>
   )
 }

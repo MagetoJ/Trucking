@@ -41,10 +41,12 @@ export const useAuthStore = create<AuthState>()(
       login: async (phone: string, password: string) => {
         set({ isLoading: true })
         try {
-          const response = await fetch('/api/auth/login', {
+
+          const response = await fetch('http://localhost:5000/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ phone, password }),
+            credentials: 'include',
           })
           
           if (!response.ok) {
@@ -63,10 +65,11 @@ export const useAuthStore = create<AuthState>()(
       register: async (userData: RegisterData) => {
         set({ isLoading: true })
         try {
-          const response = await fetch('/api/auth/register', {
+          const response = await fetch('http://localhost:5000/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userData),
+            credentials: 'include',
           })
 
           if (!response.ok) {

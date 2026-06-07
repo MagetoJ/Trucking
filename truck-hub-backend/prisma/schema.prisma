@@ -1,9 +1,10 @@
-datasource db {
-  provider = "postgresql"
-}
-
 generator client {
   provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  
 }
 
 enum Role {
@@ -42,10 +43,10 @@ model Vehicle {
   id         String    @id @default(uuid())
   driverId   String
   driver     User      @relation(fields: [driverId], references: [id], onDelete: Cascade)
-  type       String    // e.g., "32-Ton Truck", "Flatbed"
+  type       String    
   plate      String    @unique
-  capacity   String    // Capacity threshold matching freight
-  status     String    @default("ACTIVE") // ACTIVE, STANDBY, MAINTENANCE
+  capacity   String 
+  status     String    @default("ACTIVE") 
   createdAt  DateTime  @default(now())
   bookings   Booking[]
 }
@@ -63,11 +64,11 @@ model Booking {
   destination String
   cargo       String
   weight      String
-  price       String        // Managed string format (e.g. "$450") or Float/Decimal
+  price       String        
   status      BookingStatus @default(PENDING)
   progress    Int           @default(0)
   eta         String        @default("TBD")
-  date        String        // format matching your UI "YYYY-MM-DD"
+  date        String        
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 }

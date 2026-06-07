@@ -90,7 +90,7 @@ function RegisterContent() {
         password: formData.password,
         role: formData.role,
       })
-      router.push('/auth/verify')
+      router.push('/dashboard')
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.')
     } finally {
