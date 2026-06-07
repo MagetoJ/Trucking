@@ -12,6 +12,46 @@ function requireSuperAdmin(req: AuthenticatedRequest, res: Response, next: any) 
   next();
 }
 
+// Helper to parse string prices (e.g., "$450") to numbers
+const parsePrice = (price: string) => parseFloat(price.replace(/[^0-9.]/g, '')) || 0;
+
+// GET: User Management Summary with Revenue Metrics
+router.get('/users-summary', requireAuth, requireSuperAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const users = await db.user.findMany({
+      include: {
+        shipments: { select: { price: true, status: true } },
+        trips: { select: { price: true, status: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const formattedUsers = users.map(user => {
+      const shipmentsRevenue = user.shipments
+        .filter(s => s.status === 'COMPLETED')
+        .reduce((sum, s) => sum + parsePrice(s.price), 0);
+      const tripsRevenue = user.trips
+        .filter(t => t.status === 'COMPLETED')
+        .reduce((sum, t) => sum + parsePrice(t.price), 0);
+
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role.toLowerCase(),
+        verified: user.verified,
+        createdAt: user.createdAt,
+        revenueGenerated: user.role === 'SHIPPER' ? shipmentsRevenue : tripsRevenue
+      };
+    });
+
+    return res.json(formattedUsers);
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to fetch user management summary.' });
+  }
+});
+
 // GET: Complete Operational Oversight Statistics Matrix
 router.get('/metrics', requireAuth, requireSuperAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {

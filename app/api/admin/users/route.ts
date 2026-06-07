@@ -33,14 +33,25 @@ export async function GET(request: NextRequest) {
         rating: true,
         verified: true,
         createdAt: true,
+        shipments: { where: { status: 'COMPLETED' }, select: { price: true } },
+        trips: { where: { status: 'COMPLETED' }, select: { price: true } }
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    // Clean and normalize response strings to match your state-management expectations
+    const parsePrice = (p: string) => parseFloat(p.replace(/[^0-9.]/g, '')) || 0;
+
     const safeUsers = users.map((user) => ({
-      ...user,
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      verified: user.verified,
+      createdAt: user.createdAt,
       role: user.role.toLowerCase(),
+      revenueGenerated: user.role === 'SHIPPER' 
+        ? user.shipments.reduce((sum, s) => sum + parsePrice(s.price), 0)
+        : user.trips.reduce((sum, t) => sum + parsePrice(t.price), 0)
     }));
 
     return NextResponse.json(safeUsers);
