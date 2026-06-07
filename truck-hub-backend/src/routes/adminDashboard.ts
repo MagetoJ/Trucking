@@ -12,6 +12,17 @@ function requireSuperAdmin(req: AuthenticatedRequest, res: Response, next: any) 
   next();
 }
 
+// Helper for security auditing
+async function logAdminAction(adminId: string, action: string, targetId: string, details: string) {
+  try {
+    await db.auditTrail.create({
+      data: { adminId, action, targetId, details }
+    });
+  } catch (err) {
+    console.error('Failed to write to audit log:', err);
+  }
+}
+
 // Helper to parse string prices (e.g., "$450") to numbers
 const parsePrice = (price: string) => parseFloat(price.replace(/[^0-9.]/g, '')) || 0;
 
@@ -49,6 +60,39 @@ router.get('/users-summary', requireAuth, requireSuperAdmin, async (req: Authent
     return res.json(formattedUsers);
   } catch (error) {
     return res.status(500).json({ error: 'Failed to fetch user management summary.' });
+  }
+});
+
+// GET: System-wide Configuration Settings
+router.get('/config', requireAuth, requireSuperAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    let config = await db.systemConfiguration.findUnique({ where: { id: 'GLOBAL_CONFIG' } });
+    if (!config) {
+      config = await db.systemConfiguration.create({ data: { id: 'GLOBAL_CONFIG' } });
+    }
+    return res.json(config);
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to retrieve system configuration.' });
+  }
+});
+
+// POST: Update Platform Fees or Base Rates
+router.post('/config', requireAuth, requireSuperAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  const { platformFeePercent, basePricePerKm } = req.body;
+  try {
+    const updated = await db.systemConfiguration.update({
+      where: { id: 'GLOBAL_CONFIG' },
+      data: { 
+        platformFeePercent: platformFeePercent !== undefined ? parseFloat(platformFeePercent) : undefined,
+        basePricePerKm: basePricePerKm !== undefined ? basePricePerKm : undefined
+      }
+    });
+    
+    await logAdminAction(req.user!.id, 'UPDATE_CONFIG', 'GLOBAL_CONFIG', `Platform fee adjusted to ${platformFeePercent}%`);
+    
+    return res.json(updated);
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to update system parameters.' });
   }
 });
 

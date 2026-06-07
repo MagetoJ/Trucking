@@ -4,7 +4,7 @@ import { useAuthStore } from '@/lib/store'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Truck, Home, Map, Users, LogOut, Menu, X, Settings, BarChart3, FileText } from 'lucide-react'
+import { Truck, Home, Map, Users, LogOut, Menu, X, Settings, BarChart3, FileText, ShieldAlert, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export default function DashboardLayout({
@@ -23,8 +23,15 @@ export default function DashboardLayout({
     }
   }, [user, router])
 
+  // CRITICAL: Block rendering entirely if no valid state token exists.
+  // This prevents child components from making broken 401 API fetches.
   if (!user) {
-    return null
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background text-muted-foreground font-mono text-sm">
+        <RefreshCw className="w-5 h-5 animate-spin text-accent mb-2" />
+        VALIDATING AUTHENTICATION SESSION...
+      </div>
+    )
   }
 
   const handleLogout = () => {
@@ -52,7 +59,13 @@ export default function DashboardLayout({
     { icon: Settings, label: 'Earnings', href: '/dashboard/driver/earnings' },
   ]
 
-  const navItems = user.role === 'shipper' ? shipperItems : driverItems
+  const adminItems = [
+    { icon: ShieldAlert, label: 'Ecosystem Control', href: '/dashboard/admin' }
+  ]
+
+  const navItems = user.role === 'super_admin' 
+    ? adminItems 
+    : user.role === 'shipper' ? shipperItems : driverItems
 
   return (
     <div className="min-h-screen bg-background">

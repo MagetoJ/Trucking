@@ -14,10 +14,12 @@ import {
   Truck, 
   ShieldAlert, 
   Check, 
-  Trash2 
+  Trash2,
+  UserX,
+  Settings as ConfigIcon,
+  History
 } from 'lucide-react';
 
-// Unified interfaces for system administration metrics
 interface PlatformUser {
   id: string;
   name: string;
@@ -47,13 +49,15 @@ export default function AdministrativeOversightCenter() {
   const [systemState, setSystemState] = useState<SystemState | null>(null);
   const [users, setUsers] = useState<PlatformUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [submittingId, setSubmittingId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'config' | 'audit'>('overview');
   const token = useAuthStore((state) => state.token);
 
-  // Fetch both analytics overview parameters and direct user registries
+  // Fetch both system aggregates and user listings directly from the database
   const fetchOversightData = async () => {
     setLoading(true);
     try {
-      // 1. Fetch System overview performance counters
+      // 1. Fetch system metrics
       const metricsRes = await fetch('http://localhost:5000/api/admin-dashboard/metrics', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -62,7 +66,7 @@ export default function AdministrativeOversightCenter() {
         setSystemState(metricsData);
       }
 
-      // 2. Fetch User lists for standard admin control modifications
+      // 2. Fetch user directory
       const usersRes = await fetch('http://localhost:5000/api/admin/users', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -77,8 +81,9 @@ export default function AdministrativeOversightCenter() {
     }
   };
 
-  // Toggle user account vetting verification status (PUT)
+  // Toggle account vetting verification status (PUT)
   const toggleVerification = async (userId: string, currentStatus: boolean) => {
+    setSubmittingId(userId);
     try {
       const res = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
         method: 'PUT',
@@ -90,24 +95,30 @@ export default function AdministrativeOversightCenter() {
       });
 
       if (res.ok) {
-        // Optimistic UI updates
         setUsers(prev => prev.map(u => u.id === userId ? { ...u, verified: !currentStatus } : u));
-        // Refresh financial dashboard counts
-        const metricsRes = await fetch('http://localhost:5000/api/admin-dashboard/metrics', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const mData = await metricsRes.json();
-        if (mData && !mData.error) setSystemState(mData);
+        
+        // Silently update top stats badges
+        if (systemState?.metrics) {
+          setSystemState({
+            ...systemState,
+            metrics: {
+              ...systemState.metrics,
+              unverifiedUsers: systemState.metrics.unverifiedUsers + (currentStatus ? 1 : -1)
+            }
+          });
+        }
       }
     } catch (error) {
-      console.error('Failed to change user verification status:', error);
+      console.error('Failed to update verification toggle:', error);
+    } finally {
+      setSubmittingId(null);
     }
   };
 
-  // Permanently delete system accounts (DELETE)
+  // Permanent account removal option (DELETE)
   const deleteAccount = async (userId: string) => {
-    if (!confirm('Are you absolutely sure you want to permanently remove this user account record?')) return;
-    
+    if (!confirm('Are you absolutely certain you want to permanently purge this account from the platform? This cannot be undone.')) return;
+    setSubmittingId(userId);
     try {
       const res = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
         method: 'DELETE',
@@ -116,7 +127,7 @@ export default function AdministrativeOversightCenter() {
 
       if (res.ok) {
         setUsers(prev => prev.filter(u => u.id !== userId));
-        // Recalculate parameters layout state
+        // Refresh system matrices automatically
         const metricsRes = await fetch('http://localhost:5000/api/admin-dashboard/metrics', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -124,7 +135,9 @@ export default function AdministrativeOversightCenter() {
         if (mData && !mData.error) setSystemState(mData);
       }
     } catch (error) {
-      console.error('Failed to drop target user account:', error);
+      console.error('Failed to purge target account instance:', error);
+    } finally {
+      setSubmittingId(null);
     }
   };
 
@@ -146,6 +159,7 @@ export default function AdministrativeOversightCenter() {
   return (
     <div className="min-h-screen bg-slate-950 p-6 text-slate-100 font-sans">
       <div className="max-w-7xl mx-auto space-y-6">
+        
         {/* Oversight Navigation Banner */}
         <div className="flex flex-col justify-between sm:flex-row sm:items-center border-b border-slate-900 pb-6 gap-4">
           <div>
@@ -160,9 +174,30 @@ export default function AdministrativeOversightCenter() {
           </button>
         </div>
 
+        {/* Tab Navigation */}
+        <div className="flex gap-1 bg-slate-900/50 p-1 rounded-xl border border-slate-900 w-fit">
+          {[
+            { id: 'overview', label: 'Ecosystem Overview', icon: Layers },
+            { id: 'users', label: 'User Directory', icon: Users },
+            { id: 'config', label: 'System Config', icon: ConfigIcon },
+            { id: 'audit', label: 'Security Logs', icon: History },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition ${
+                activeTab === tab.id ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+              }`}
+            >
+              <tab.icon className="h-3.5 w-3.5" /> {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === 'overview' && (
+          <>
         {/* Component Analytical Cards Grid */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          
           <div className="p-6 bg-slate-900/40 border border-slate-900 rounded-2xl flex items-center justify-between">
             <div>
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Gross Booked Volume</p>
@@ -200,7 +235,6 @@ export default function AdministrativeOversightCenter() {
             </div>
             <AlertCircle className="h-10 w-10 text-red-500/20" />
           </div>
-
         </div>
 
         {/* Global Operational Live Flow Log Ledger & System Summary Layout */}
@@ -232,14 +266,14 @@ export default function AdministrativeOversightCenter() {
                       </td>
                       <td className="py-4 font-mono">
                         <div className="flex items-center gap-1.5">
-                          <span>{b.shipper.name}</span>
+                          <span>{b.shipper?.name}</span>
                           <PhoneCall className="h-3 w-3 text-slate-600" />
                         </div>
                       </td>
                       <td className="py-4 font-mono text-slate-400">
                         {b.driver ? (
                           <div className="flex items-center gap-1.5 text-indigo-400">
-                            <span>{b.driver.name}</span>
+                            <span>{b.driver?.name}</span>
                             <PhoneCall className="h-3 w-3 text-slate-600" />
                           </div>
                         ) : (
@@ -273,12 +307,12 @@ export default function AdministrativeOversightCenter() {
                 <div>
                   <div className="flex justify-between text-xs font-mono mb-2">
                     <span className="text-slate-400">Shippers Volume</span>
-                    <span className="text-white font-bold">{systemState?.metrics.shippersCount || 0}</span>
+                    <span className="text-white font-bold">{systemState?.metrics?.shippersCount || 0}</span>
                   </div>
                   <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-gradient-to-r from-blue-600 to-indigo-500 rounded-full" 
-                      style={{ width: `${((systemState?.metrics.shippersCount || 0) / ((systemState?.metrics.shippersCount || 1) + (systemState?.metrics.driversCount || 0))) * 100}%` }}
+                      style={{ width: `${((systemState?.metrics?.shippersCount || 0) / ((systemState?.metrics?.shippersCount || 1) + (systemState?.metrics?.driversCount || 0))) * 100}%` }}
                     ></div>
                   </div>
                 </div>
@@ -286,12 +320,12 @@ export default function AdministrativeOversightCenter() {
                 <div>
                   <div className="flex justify-between text-xs font-mono mb-2">
                     <span className="text-slate-400">Vetted Haulers/Drivers</span>
-                    <span className="text-white font-bold">{systemState?.metrics.driversCount || 0}</span>
+                    <span className="text-white font-bold">{systemState?.metrics?.driversCount || 0}</span>
                   </div>
                   <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-gradient-to-r from-orange-500 to-amber-500 rounded-full" 
-                      style={{ width: `${((systemState?.metrics.driversCount || 0) / ((systemState?.metrics.shippersCount || 0) + (systemState?.metrics.driversCount || 1))) * 100}%` }}
+                      style={{ width: `${((systemState?.metrics?.driversCount || 0) / ((systemState?.metrics?.shippersCount || 0) + (systemState?.metrics?.driversCount || 1))) * 100}%` }}
                     ></div>
                   </div>
                 </div>
@@ -304,5 +338,93 @@ export default function AdministrativeOversightCenter() {
                 All platform roles run behind a backend privacy shield. Drivers can only access matching data payloads when assigned to active workloads.
               </p>
             </div>
-
           </div>
+        </div>
+          </>
+        )}
+
+        {activeTab === 'users' && (
+          <>
+        {/* Global Accounts Controls Table Dashboard Module */}
+        <div className="bg-slate-900/20 border border-slate-900 rounded-2xl overflow-hidden shadow-xl">
+          <div className="px-6 py-4 bg-slate-900/60 border-b border-slate-900">
+            <h3 className="text-sm font-bold text-white tracking-wide">Global Platform Account Registry Directory</h3>
+          </div>
+          <div className="p-4 overflow-x-auto">
+            <table className="w-full text-left whitespace-nowrap text-xs border-collapse">
+              <thead>
+                <tr className="text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-900 bg-slate-900/10">
+                  <th className="p-3">User Legal Name</th>
+                  <th className="p-3">Email Address</th>
+                  <th className="p-3">Phone Connection</th>
+                  <th className="p-3">Role Assigned</th>
+                  <th className="p-3">Status</th>
+                  <th className="p-3 text-center">Administrative Controls</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-900 text-slate-300">
+                {users.map((user) => (
+                  <tr key={user.id} className="hover:bg-slate-900/20 transition">
+                    <td className="p-3 font-semibold text-white">{user.name}</td>
+                    <td className="p-3 font-mono">{user.email}</td>
+                    <td className="p-3 font-mono text-slate-400">{user.phone}</td>
+                    <td className="p-3 capitalize">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        user.role?.toLowerCase() === 'driver' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' :
+                        user.role?.toLowerCase() === 'shipper' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
+                      }`}>
+                        {user.role}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      <span className={`text-[11px] font-semibold ${user.verified ? 'text-emerald-400' : 'text-amber-500'}`}>
+                        {user.verified ? '✓ Active & Verified' : '⚠ Verification Pending'}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      <div className="flex items-center justify-center gap-2">
+                        <button 
+                          onClick={() => toggleVerification(user.id, user.verified)}
+                          disabled={submittingId === user.id || user.role?.toUpperCase() === 'SUPER_ADMIN'}
+                          className="p-1.5 border border-slate-800 rounded-md hover:bg-slate-800 text-slate-300 transition disabled:opacity-20 cursor-pointer"
+                          title="Toggle Account Approval Vetting State"
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                        </button>
+                        <button 
+                          onClick={() => deleteAccount(user.id)}
+                          disabled={submittingId === user.id || user.role?.toUpperCase() === 'SUPER_ADMIN'}
+                          className="p-1.5 border border-red-500/20 bg-red-500/5 rounded-md hover:bg-red-500/10 text-red-400 transition disabled:opacity-20 cursor-pointer"
+                          title="Purge Account Matrix Profile Instantly"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+          </>
+        )}
+
+        {activeTab === 'config' && (
+          <div className="p-12 text-center border border-dashed border-slate-800 rounded-3xl">
+            <ConfigIcon className="h-12 w-12 text-slate-700 mx-auto mb-4" />
+            <p className="text-slate-500 font-mono text-sm">System Configuration Module Initializing...</p>
+          </div>
+        )}
+
+        {activeTab === 'audit' && (
+          <div className="p-12 text-center border border-dashed border-slate-800 rounded-3xl">
+            <History className="h-12 w-12 text-slate-700 mx-auto mb-4" />
+            <p className="text-slate-500 font-mono text-sm">Security Audit Trail Streaming Offline</p>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}

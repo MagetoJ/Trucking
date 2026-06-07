@@ -22,10 +22,16 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
+      // 1. Fire the store's login request to backend engine
       await login(phone, password)
+
+      // 2. Add an explicit tiny pause to allow localStorage synchronization to finish writing
+      await new Promise((resolve) => setTimeout(resolve, 50))
+
+      // 3. Navigate into the secure view dashboard portal area safely
       router.push('/dashboard')
     } catch (err: any) {
-      setError(err.message || 'Login failed. Please try again.')
+      setError(err.message || 'Login execution failed.')
     } finally {
       setIsLoading(false)
     }
