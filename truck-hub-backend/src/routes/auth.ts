@@ -90,7 +90,12 @@ router.post('/register', async (req: Request, res: Response) => {
     const { password: _, ...safeUser } = newUser
     return res.status(201).json({ user: { ...safeUser, role: safeUser.role.toLowerCase() }, token })
   } catch (error) {
-    return res.status(500).json({ error: 'Registration execution failed.' })
+    // This will print the exact Prisma database or code crash reason in your backend terminal console!
+    console.error("CRITICAL REGISTRATION CRASH:", error);
+    return res.status(500).json({ 
+      error: 'Registration execution failed.', 
+      details: error instanceof Error ? error.message : String(error) 
+    })
   }
 })
 

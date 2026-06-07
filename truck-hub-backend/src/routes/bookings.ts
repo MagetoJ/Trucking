@@ -60,4 +60,49 @@ router.post('/', requireAuth, async (req: AuthenticatedRequest, res: Response) =
   }
 })
 
+// Driver claims/accepts an available pending load
+router.post('/:id/accept', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  const bookingId = parseInt(req.params.id);
+  const userId = req.user!.id;
+  const userRole = req.user!.role;
+
+  if (userRole !== 'DRIVER') {
+    return res.status(403).json({ error: 'Access denied. Only carriers/drivers can claim freight match operations.' });
+  }
+
+  try {
+    // Identify driver vehicle profile
+    const vehicle = await db.vehicle.findFirst({
+      where: { driverId: userId }
+    });
+
+    // Transaction evaluation ensures an asset isn't double booked or snatched if no longer PENDING
+    const booking = await db.booking.findUnique({ where: { id: bookingId } });
+    
+    if (!booking) {
+      return res.status(444).json({ error: 'The requested shipment payload could not be found.' });
+    }
+
+    if (booking.status !== 'PENDING') {
+      return res.status(410).json({ error: 'Load unavailable. This booking has already been claimed by another driver.' });
+    }
+
+    const updatedBooking = await db.booking.update({
+      where: { id: bookingId },
+      data: {
+        driverId: userId,
+        vehicleId: vehicle?.id || null,
+        status: 'ACCEPTED',
+        progress: 10,
+        eta: 'Calculating route...'
+      }
+    });
+
+    return res.json(updatedBooking);
+  } catch (error) {
+    console.error('Driver claim execution failure:', error);
+    return res.status(500).json({ error: 'Internal system error matching driver to booking.' });
+  }
+});
+
 export default router

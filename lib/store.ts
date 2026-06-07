@@ -31,6 +31,9 @@ interface AuthState {
   setUser: (user: User) => void
 }
 
+// Global variable pointing to your standalone Express application port
+const BACKEND_API_URL = 'http://localhost:5000/api';
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
@@ -41,20 +44,18 @@ export const useAuthStore = create<AuthState>()(
       login: async (phone: string, password: string) => {
         set({ isLoading: true })
         try {
-
-          const response = await fetch('http://localhost:5000/api/auth/login', {
+          const response = await fetch(`${BACKEND_API_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ phone, password }),
             credentials: 'include',
           })
           
+          const data = await response.json()
           if (!response.ok) {
-            const errorMsg = await response.json()
-            throw new Error(errorMsg.error || 'Authentication failure')
+            throw new Error(data.error || 'Authentication failure')
           }
           
-          const data = await response.json()
           set({ user: data.user, token: data.token, isLoading: false })
         } catch (error: any) {
           set({ isLoading: false })
@@ -65,19 +66,18 @@ export const useAuthStore = create<AuthState>()(
       register: async (userData: RegisterData) => {
         set({ isLoading: true })
         try {
-          const response = await fetch('http://localhost:5000/api/auth/register', {
+          const response = await fetch(`${BACKEND_API_URL}/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userData),
             credentials: 'include',
           })
 
+          const data = await response.json()
           if (!response.ok) {
-            const errorMsg = await response.json()
-            throw new Error(errorMsg.error || 'Registration failed')
+            throw new Error(data.error || 'Registration failed')
           }
 
-          const data = await response.json()
           set({ user: data.user, token: data.token, isLoading: false })
         } catch (error: any) {
           set({ isLoading: false })

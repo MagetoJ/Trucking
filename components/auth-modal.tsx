@@ -9,7 +9,7 @@ import { X, Truck, Eye, EyeOff, CheckCircle2 } from 'lucide-react'
 interface AuthModalProps {
   isOpen: boolean
   onClose: () => void
-  onToggleView: () => void // Changes active panel layout to Login view
+  onToggleView: () => void 
 }
 
 export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthModalProps) {
@@ -41,7 +41,7 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
   }
 
   const validateStep1 = () => {
-    if (!formData.name || !formData.phone) {
+    if (!formData.name.trim() || !formData.phone.trim()) {
       setError('Please fill in your name and phone number.')
       return false
     }
@@ -49,7 +49,7 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
   }
 
   const validateStep2 = () => {
-    if (!formData.email || !formData.password || !formData.confirmPassword) {
+    if (!formData.email.trim() || !formData.password || !formData.confirmPassword) {
       setError('Credentials fields are mandatory.')
       return false
     }
@@ -77,7 +77,7 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
 
     setIsLoading(true)
     try {
-      // Execute database records generation via state container
+      // Dispatches request straight to our local node backend engine database hook
       await registerClient({
         name: formData.name,
         phone: formData.phone,
@@ -102,7 +102,7 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
         <button
           onClick={onClose}
           aria-label="Close"
-          className="absolute right-4 top-4 text-muted-foreground hover:text-foreground transition-colors z-10 p-1 rounded-full hover:bg-muted"
+          className="absolute right-4 top-4 text-muted-foreground hover:text-foreground transition-colors z-10 p-1 rounded-full hover:bg-muted cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
@@ -137,7 +137,7 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* STEP 1: Profile Assignment entry */}
+            {/* STEP 1: Assignment Selection and Identity Profile */}
             {step === 1 && (
               <>
                 <div>
@@ -148,7 +148,7 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
                     <button
                       type="button"
                       onClick={() => handleRoleSelect('shipper')}
-                      className={`p-3 rounded-lg border-2 text-left transition-all ${
+                      className={`p-3 rounded-lg border-2 text-left transition-all cursor-pointer ${
                         formData.role === 'shipper'
                           ? 'border-accent bg-accent/5'
                           : 'border-border hover:border-accent/40 bg-background'
@@ -162,7 +162,7 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
                     <button
                       type="button"
                       onClick={() => handleRoleSelect('driver')}
-                      className={`p-3 rounded-lg border-2 text-left transition-all ${
+                      className={`p-3 rounded-lg border-2 text-left transition-all cursor-pointer ${
                         formData.role === 'driver'
                           ? 'border-accent bg-accent/5'
                           : 'border-border hover:border-accent/40 bg-background'
@@ -210,14 +210,14 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
                 <Button 
                   type="button" 
                   onClick={handleNext} 
-                  className="w-full bg-accent hover:bg-accent/90 text-white font-bold text-sm py-2.5 mt-2"
+                  className="w-full bg-accent hover:bg-accent/90 text-white font-bold text-sm py-2.5 mt-2 cursor-pointer"
                 >
                   Next
                 </Button>
               </>
             )}
 
-            {/* STEP 2: Access Credentials fields */}
+            {/* STEP 2: Access Credentials Fields */}
             {step === 2 && (
               <>
                 <div>
@@ -254,7 +254,7 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
+                      className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground cursor-pointer"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -282,7 +282,7 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
                     type="button"
                     onClick={() => setStep(1)}
                     variant="outline"
-                    className="flex-1 border-accent text-accent hover:bg-accent/5 py-2.5"
+                    className="flex-1 border-accent text-accent hover:bg-accent/5 py-2.5 cursor-pointer"
                   >
                     Back
                   </Button>
@@ -292,7 +292,7 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
                       setError('')
                       if (validateStep2()) setStep(3)
                     }}
-                    className="flex-1 bg-accent hover:bg-accent/90 text-white font-bold py-2.5"
+                    className="flex-1 bg-accent hover:bg-accent/90 text-white font-bold py-2.5 cursor-pointer"
                   >
                     Next
                   </Button>
@@ -300,7 +300,7 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
               </>
             )}
 
-            {/* STEP 3: Summary Sheet verification and submission */}
+            {/* STEP 3: Summary Sheet Verification and Database Submission */}
             {step === 3 && (
               <>
                 <div className="bg-muted/50 border border-border rounded-lg p-3.5 space-y-2.5 text-sm">
@@ -338,7 +338,7 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
                 </div>
 
                 <p className="text-[11px] text-muted-foreground text-center px-2">
-                  By selecting Create Account, you acknowledge immediate system initialization configuration rules.
+                  By selecting Create Account, your profile will be committed to the system database immediately.
                 </p>
 
                 <div className="flex gap-3 pt-2">
@@ -346,14 +346,14 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
                     type="button"
                     onClick={() => setStep(2)}
                     variant="outline"
-                    className="flex-1 border-accent text-accent hover:bg-accent/5 py-2.5"
+                    className="flex-1 border-accent text-accent hover:bg-accent/5 py-2.5 cursor-pointer"
                   >
                     Back
                   </Button>
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="flex-1 bg-accent hover:bg-accent/90 text-white font-bold py-2.5"
+                    className="flex-1 bg-accent hover:bg-accent/90 text-white font-bold py-2.5 cursor-pointer"
                   >
                     {isLoading ? 'Creating...' : 'Create Account'}
                   </Button>
@@ -362,7 +362,7 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
             )}
           </form>
 
-          {/* Footer toggle view triggers */}
+          {/* Alternative Panel Switcher */}
           <p className="text-center text-xs text-muted-foreground mt-5">
             Already have an account?{' '}
             <button onClick={onToggleView} className="text-accent hover:underline font-semibold bg-transparent border-0 p-0 cursor-pointer">

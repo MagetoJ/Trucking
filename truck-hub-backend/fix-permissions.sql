@@ -1,0 +1,1 @@
+SELECT current_user, current_database(), has_table_privilege('truck_hauling_user', 'public."User"', 'SELECT');
