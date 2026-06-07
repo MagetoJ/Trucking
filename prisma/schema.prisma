@@ -9,6 +9,7 @@ generator client {
 enum Role {
   SHIPPER
   DRIVER
+  SUPER_ADMIN
 }
 
 enum BookingStatus {

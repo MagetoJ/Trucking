@@ -48,6 +48,7 @@ export default function LoginModal({ isOpen, onClose, onToggleView }: LoginModal
         <button
           onClick={onClose}
           aria-label="Close"
+          title="Close"
           className="absolute right-4 top-4 text-muted-foreground hover:text-foreground transition-colors z-10 p-1 rounded-full hover:bg-muted"
         >
           <X className="w-5 h-5" />

@@ -62,7 +62,7 @@ router.post('/', requireAuth, async (req: AuthenticatedRequest, res: Response) =
 
 // Driver claims/accepts an available pending load
 router.post('/:id/accept', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
-  const bookingId = parseInt(req.params.id);
+  const bookingId = req.params.id; // bookingId is already a string from req.params
   const userId = req.user!.id;
   const userRole = req.user!.role;
 

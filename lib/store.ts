@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 
 // Define types for your store state and actions
-export type UserRole = 'shipper' | 'driver'
+export type UserRole = 'shipper' | 'driver' | 'super_admin'
 
 interface User {
   id: string

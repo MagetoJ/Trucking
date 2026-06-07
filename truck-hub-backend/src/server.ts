@@ -4,6 +4,8 @@ import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
 import bookingRouter from './routes/bookings'
 import authRouter from './routes/auth'
+import adminRouter from './routes/admin'
+import adminDashboardRouter from './routes/adminDashboard'
 
 dotenv.config()
 
@@ -22,6 +24,8 @@ app.use(cookieParser())
 // Bind your application route configurations
 app.use('/api/auth', authRouter)
 app.use('/api/bookings', bookingRouter)
+app.use('/api/admin', adminRouter)
+app.use('/api/admin-dashboard', adminDashboardRouter)
 
 app.get('/health', (req, res) => {
   res.json({ status: 'healthy', platform: 'TruckHub Engine' })
