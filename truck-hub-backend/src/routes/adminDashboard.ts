@@ -96,6 +96,20 @@ router.post('/config', requireAuth, requireSuperAdmin, async (req: Authenticated
   }
 });
 
+// GET: Retrieve all audit logs
+router.get('/audit-logs', requireAuth, requireSuperAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const auditLogs = await db.auditTrail.findMany({
+      orderBy: { timestamp: 'desc' },
+      take: 50, // Limit to recent logs for performance
+    });
+    return res.json(auditLogs);
+  } catch (error) {
+    console.error('Failed to retrieve audit logs:', error);
+    return res.status(500).json({ error: 'Failed to fetch audit trail records.' });
+  }
+});
+
 // GET: Complete Operational Oversight Statistics Matrix
 router.get('/metrics', requireAuth, requireSuperAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {

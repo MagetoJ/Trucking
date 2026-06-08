@@ -1,34 +1,67 @@
 'use client'
 
-import { BarChart3, TrendingUp, DollarSign, Calendar } from 'lucide-react'
+import { useState } from 'react'
+import useSWR from 'swr'
+import { authenticatedFetcher } from '@/lib/fetcher'
+import { useAuthStore } from '@/lib/store'
 import { Button } from '@/components/ui/button'
+import { 
+  BarChart3,
+  DollarSign, 
+  Briefcase, 
+  TrendingUp, 
+  Wallet, 
+  RefreshCw, 
+  AlertCircle, 
+  ArrowUpRight 
+} from 'lucide-react'
 
-export default function EarningsPage() {
-  const earnings = [
-    { month: 'January', amount: 3240, trips: 12 },
-    { month: 'December', amount: 2890, trips: 10 },
-    { month: 'November', amount: 3120, trips: 11 },
-    { month: 'October', amount: 2750, trips: 9 },
-  ]
+interface EarningsStats {
+  totalEarnings: number
+  jobsCompleted: number
+  avgPayout: number
+  withdrawableBalance: number
+}
 
-  const totalEarnings = earnings.reduce((sum, e) => sum + e.amount, 0)
-  const totalTrips = earnings.reduce((sum, e) => sum + e.trips, 0)
-  const averagePerTrip = Math.round(totalEarnings / totalTrips)
+export default function DriverEarningsPage() {
+  const token = useAuthStore((state) => state.token)
+  const [withdrawAmount, setWithdrawAmount] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
+  // Live SWR Hook pulling carrier financial data streams directly from backend database rows
+  const { data: stats, error, isLoading, mutate } = useSWR<EarningsStats>(
+    token ? 'http://localhost:5000/api/bookings/driver-earnings-stats' : null,
+    authenticatedFetcher,
+    { refreshInterval: 5000 }
+  )
+
+  const handleWithdrawRequest = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!withdrawAmount || parseFloat(withdrawAmount) <= 0) return
+
+    setSubmitting(true)
+    try {
+      // Placeholder for your payment gateway route integration layer (e.g., M-Pesa / Stripe Escrow payouts)
+      alert(`Withdrawal request for $${withdrawAmount} received. Processing payout sequence...`)
+      setWithdrawAmount('')
+      mutate()
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold text-foreground">Earnings</h2>
-        <p className="text-muted-foreground mt-1">Track your income and performance</p>
-      </div>
-
-      {/* Stats */}
-      <div className="grid md:grid-cols-4 gap-4">
+    <div className="space-y-6 max-w-5xl mx-auto text-foreground pb-12">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div className="bg-card border border-border rounded-lg p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-muted-foreground text-sm font-medium">Total Earnings</p>
-              <p className="text-3xl font-bold text-foreground mt-2">${totalEarnings}</p>
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Net Take-home Income</span>
+              <h3 className="text-2xl font-black mt-2 text-foreground">
+                ${stats ? stats.totalEarnings.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+              </h3>
             </div>
             <DollarSign className="w-12 h-12 text-accent/30" />
           </div>
@@ -37,8 +70,8 @@ export default function EarningsPage() {
         <div className="bg-card border border-border rounded-lg p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-muted-foreground text-sm font-medium">Total Trips</p>
-              <p className="text-3xl font-bold text-foreground mt-2">{totalTrips}</p>
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Completed Manifests</span>
+              <h3 className="text-2xl font-black mt-2 text-foreground">{stats?.jobsCompleted || 0}</h3>
             </div>
             <BarChart3 className="w-12 h-12 text-accent/30" />
           </div>
@@ -47,8 +80,10 @@ export default function EarningsPage() {
         <div className="bg-card border border-border rounded-lg p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-muted-foreground text-sm font-medium">Avg per Trip</p>
-              <p className="text-3xl font-bold text-foreground mt-2">${averagePerTrip}</p>
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Avg. Profit / Route</span>
+              <h3 className="text-2xl font-black mt-2 text-foreground">
+                ${stats ? stats.avgPayout.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+              </h3>
             </div>
             <TrendingUp className="w-12 h-12 text-accent/30" />
           </div>
@@ -57,54 +92,49 @@ export default function EarningsPage() {
         <div className="bg-card border border-border rounded-lg p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-muted-foreground text-sm font-medium">Pending Payout</p>
-              <p className="text-3xl font-bold text-foreground mt-2">$580</p>
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Available Balance</span>
+              <h3 className="text-2xl font-black mt-2 text-emerald-500">
+                ${stats ? stats.withdrawableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+              </h3>
             </div>
-            <Calendar className="w-12 h-12 text-accent/30" />
+            <Wallet className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center" />
           </div>
         </div>
       </div>
 
-      {/* Withdrawal */}
-      <div className="bg-card border border-border rounded-lg p-6">
-        <h3 className="text-xl font-bold text-foreground mb-4">Withdraw Earnings</h3>
-        <div className="flex gap-4 items-end">
-          <div className="flex-1">
-            <label className="block text-sm font-semibold text-foreground mb-2">Amount</label>
+      {/* Payout Withdrawal Action Processing Block Form */}
+      <div className="bg-card border border-border rounded-2xl p-6 shadow-xs max-w-xl">
+        <h3 className="text-lg font-bold flex items-center gap-2 mb-1.5">
+          <Wallet className="w-5 h-5 text-accent" /> Withdraw Platform Balance
+        </h3>
+        <p className="text-xs text-muted-foreground mb-4">Transfer your secure carrier settlements instantly to your linked banking or electronic wallet setup entries.</p>
+        
+        <form onSubmit={handleWithdrawRequest} className="space-y-4">
+          <div>
+            <label htmlFor="amount-input" className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Withdrawal Amount ($)</label>
             <div className="relative">
-              <span className="absolute left-3 top-3 text-foreground font-semibold">$</span>
+              <span className="absolute left-4 top-3 text-muted-foreground font-mono text-sm">$</span>
               <input
+                id="amount-input"
                 type="number"
+                step="0.01"
                 placeholder="0.00"
-                className="w-full pl-7 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent bg-background text-foreground"
-                max={580}
+                value={withdrawAmount}
+                onChange={(e) => setWithdrawAmount(e.target.value)}
+                max={stats?.withdrawableBalance || 0}
+                className="w-full pl-8 pr-4 py-2.5 border border-border rounded-xl bg-background text-foreground text-sm font-mono focus:ring-2 focus:ring-accent outline-none"
+                required
               />
             </div>
           </div>
-          <Button className="bg-accent hover:bg-accent/90 text-primary font-bold">
-            Request Withdrawal
+          <Button 
+            type="submit" 
+            disabled={submitting || !withdrawAmount || parseFloat(withdrawAmount) <= 0}
+            className="w-full bg-accent hover:bg-accent/90 text-white font-bold font-mono tracking-wider text-xs py-3 rounded-xl uppercase shadow-md cursor-pointer transition flex items-center justify-center gap-1.5"
+          >
+            {submitting ? 'Processing Payout...' : 'Request Balance Payout'} <ArrowUpRight className="w-4 h-4" />
           </Button>
-        </div>
-        <p className="text-xs text-muted-foreground mt-2">Minimum: $50. Payouts processed within 2-3 business days.</p>
-      </div>
-
-      {/* Earnings History */}
-      <div className="bg-card border border-border rounded-lg p-6">
-        <h3 className="text-xl font-bold text-foreground mb-6">Earnings by Month</h3>
-        <div className="space-y-4">
-          {earnings.map((earning, index) => (
-            <div key={index} className="flex items-center justify-between pb-4 border-b border-border last:border-b-0">
-              <div>
-                <p className="font-semibold text-foreground">{earning.month}</p>
-                <p className="text-sm text-muted-foreground">{earning.trips} trips completed</p>
-              </div>
-              <div className="text-right">
-                <p className="text-2xl font-bold text-foreground">${earning.amount}</p>
-                <p className="text-sm text-accent">${Math.round(earning.amount / earning.trips)}/trip</p>
-              </div>
-            </div>
-          ))}
-        </div>
+        </form>
       </div>
     </div>
   )

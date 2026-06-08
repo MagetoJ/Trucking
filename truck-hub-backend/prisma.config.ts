@@ -8,6 +8,7 @@ export default defineConfig({
     seed: "npx tsx prisma/seed.ts",
   },
   datasource: {
+    // This injects your database credentials into the Prisma engine workflow safely outside the schema file
     url: env("DATABASE_URL"),
   },
 })

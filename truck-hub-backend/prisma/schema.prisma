@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  
+  // CRITICAL FIX: The "url" parameter has been removed from here to satisfy Prisma 7 rules
 }
 
 enum Role {
@@ -22,22 +22,30 @@ enum BookingStatus {
   CANCELLED
 }
 
+enum EscrowStatus {
+  HELD
+  RELEASED
+  DISPUTED
+  REFUNDED
+}
+
 model User {
-  id           String        @id @default(uuid())
-  phone        String        @unique
-  password     String
-  name         String
-  email        String        @unique
-  role         Role
-  rating       Float         @default(5.0)
-  verified     Boolean       @default(false)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id                String        @id @default(uuid())
+  phone             String        @unique
+  password          String
+  name              String
+  email             String        @unique
+  role              Role
+  rating            Float         @default(5.0)
+  verified          Boolean       @default(false)
+  goodsCapabilities String[]      @default([])
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
   
   // Relations
-  shipments    Booking[]     @relation("ShipperBookings")
-  trips        Booking[]     @relation("DriverTrips")
-  vehicles     Vehicle[]
+  shipments         Booking[]     @relation("ShipperBookings")
+  trips             Booking[]     @relation("DriverTrips")
+  vehicles          Vehicle[]
 }
 
 model Vehicle {
@@ -72,4 +80,40 @@ model Booking {
   date        String        
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+
+  escrow      EscrowTransaction? 
+}
+
+model EscrowTransaction {
+  id          String       @id @default(uuid())
+  bookingId   Int          @unique
+  booking     Booking      @relation(fields: [bookingId], references: [id])
+  amount      Decimal      @db.Decimal(10, 2)
+  status      EscrowStatus @default(HELD)
+  heldAt      DateTime     @default(now())
+  releasedAt  DateTime?
+}
+
+model SystemConfiguration {
+  id                 String   @id @default("GLOBAL_CONFIG")
+  platformFeePercent Float    @default(10.0)
+  basePricePerKm     Decimal  @db.Decimal(10, 2) @default(2.50)
+  updatedAt          DateTime @updatedAt
+}
+
+model AuditTrail {
+  id          String   @id @default(uuid())
+  adminId     String
+  action      String   
+  targetId    String   
+  details     String
+  timestamp   DateTime @default(now())
+}
+model Notification {
+  id         String   @id @default(uuid())
+  userId     String   // The recipient of the notification (Driver or Shipper)
+  title      String
+  message    String
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
 }
