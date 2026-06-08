@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import useSWR from 'swr'
-import { authenticatedFetcher } from '@/lib/fetcher'
+import { BACKEND_BASE_URL, authenticatedFetcher } from '@/lib/fetcher' // Import BACKEND_BASE_URL
 import { useAuthStore } from '@/lib/store'
 import { GoogleMap, useJsApiLoader, MarkerF, DirectionsRenderer } from '@react-google-maps/api'
 import { MapPin, Truck, Clock, DollarSign, Search, RefreshCw, AlertCircle, ShieldCheck } from 'lucide-react'
@@ -43,7 +43,7 @@ export default function RealTimeTrackingPage() {
   })
 
   const { data: trip, error, isLoading } = useSWR<TrackingDetails>(
-    token && activeTrackingId ? `http://localhost:5000/api/bookings/${activeTrackingId}` : null,
+    token && activeTrackingId ? `${BACKEND_BASE_URL}/api/bookings/${activeTrackingId}` : null,
     authenticatedFetcher,
     { refreshInterval: 4000 }
   )

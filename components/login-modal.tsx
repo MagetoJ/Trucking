@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { BACKEND_BASE_URL } from '@/lib/fetcher' // Import BACKEND_BASE_URL
 import { useAuthStore } from '@/lib/store'
 import { X, Truck, Eye, EyeOff } from 'lucide-react'
 
@@ -19,7 +20,7 @@ export default function LoginModal({ isOpen, onClose, onToggleView }: LoginModal
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const loginClient = useAuthStore((state) => state.login)
+  const loginStore = useAuthStore((state) => state.login) // Renamed to avoid conflict with local login function
 
   if (!isOpen) return null
 
@@ -29,8 +30,8 @@ export default function LoginModal({ isOpen, onClose, onToggleView }: LoginModal
     setIsLoading(true)
 
     try {
-      // Authenticates with /api/auth/login and stores session safely in localStorage
-      await loginClient(phone, password)
+      // Authenticates with /api/auth/login and stores session safely in localStorage (assuming loginStore uses BACKEND_BASE_URL internally)
+      await loginStore(phone, password)
       onClose()
       router.push('/dashboard') // Redirects directly to the workspace
     } catch (err: any) {

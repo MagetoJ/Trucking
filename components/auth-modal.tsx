@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { BACKEND_BASE_URL } from '@/lib/fetcher' // Import BACKEND_BASE_URL
 import { useAuthStore, UserRole } from '@/lib/store'
 import { X, Truck, Eye, EyeOff, CheckCircle2 } from 'lucide-react'
 
@@ -27,7 +28,7 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const registerClient = useAuthStore((state) => state.register)
+  const registerStore = useAuthStore((state) => state.register) // Renamed to avoid conflict with local register function
 
   if (!isOpen) return null
 
@@ -78,7 +79,7 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
     setIsLoading(true)
     try {
       // Dispatches request straight to our local node backend engine database hook
-      await registerClient({
+      await registerStore({ // Assuming registerStore uses BACKEND_BASE_URL internally
         name: formData.name,
         phone: formData.phone,
         email: formData.email,

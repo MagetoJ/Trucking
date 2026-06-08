@@ -2,7 +2,7 @@
 
 import useSWR from 'swr'
 import { authenticatedFetcher } from '@/lib/fetcher'
-import { useAuthStore } from '@/lib/store'
+import { BACKEND_BASE_URL, authenticatedFetcher } from '@/lib/fetcher' // Import BACKEND_BASE_URL
 import { BarChart3, TrendingUp, Users, DollarSign, MapPin, RefreshCw, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -25,7 +25,7 @@ export default function DashboardPage() {
   // General single call architecture for real role sync
   const roleQueryParam = user?.role === 'shipper' ? 'shipper' : 'driver'
   const { data: bookings, error, isLoading, mutate } = useSWR<Booking[]>(
-    token ? `http://localhost:5000/api/bookings?role=${roleQueryParam}` : null,
+    token ? `${BACKEND_BASE_URL}/api/bookings?role=${roleQueryParam}` : null,
     authenticatedFetcher,
     { refreshInterval: 5000 }
   )

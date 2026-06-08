@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { BACKEND_BASE_URL } from '@/lib/fetcher' // Import BACKEND_BASE_URL
 import { useAuthStore } from '@/lib/store'
 import { MapPin, Package, Truck, DollarSign, AlertCircle, Edit3, PlusCircle } from 'lucide-react'
 
@@ -50,9 +51,9 @@ function PostLoadFormContent() {
     setError('')
     setIsLoading(true)
 
-    const endpoint = isEditMode 
-      ? `http://localhost:5000/api/bookings/${editBookingId}` // Target update route
-      : 'http://localhost:5000/api/bookings'
+    const endpoint = isEditMode
+      ? `${BACKEND_BASE_URL}/api/bookings/${editBookingId}` // Target update route
+      : `${BACKEND_BASE_URL}/api/bookings`
 
     const method = isEditMode ? 'PUT' : 'POST'
 

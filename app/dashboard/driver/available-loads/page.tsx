@@ -2,7 +2,7 @@
 
 import useSWR from 'swr'
 import { useState } from 'react'
-import { authenticatedFetcher } from '@/lib/fetcher'
+import { BACKEND_BASE_URL, authenticatedFetcher } from '@/lib/fetcher' // Import BACKEND_BASE_URL
 import { useAuthStore } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import { MapPin, RefreshCw, AlertCircle, CheckCircle, Box, DollarSign, XCircle, CheckCircle2 } from 'lucide-react'
@@ -24,7 +24,7 @@ export default function AvailableLoadsPage() {
   const [message, setMessage] = useState({ type: '', text: '' })
   
   const { data: loads, error, isLoading, mutate } = useSWR<OpenBooking[]>(
-    token ? 'http://localhost:5000/api/bookings?role=driver' : null,
+    token ? `${BACKEND_BASE_URL}/api/bookings?role=driver` : null,
     authenticatedFetcher,
     { refreshInterval: 4000 } // Poll every 4 seconds for live sync
   )
@@ -34,7 +34,7 @@ export default function AvailableLoadsPage() {
     setMessage({ type: '', text: '' })
 
     try {
-      const response = await fetch(`http://localhost:5000/api/bookings/${id}/${action}`, {
+      const response = await fetch(`${BACKEND_BASE_URL}/api/bookings/${id}/${action}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

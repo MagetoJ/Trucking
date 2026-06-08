@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import useSWR from 'swr'
-import { authenticatedFetcher } from '@/lib/fetcher'
+import { BACKEND_BASE_URL, authenticatedFetcher } from '@/lib/fetcher' // Import BACKEND_BASE_URL
 import { useAuthStore } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import { 
@@ -30,7 +30,7 @@ export default function DriverEarningsPage() {
 
   // Live SWR Hook pulling carrier financial data streams directly from backend database rows
   const { data: stats, error, isLoading, mutate } = useSWR<EarningsStats>(
-    token ? 'http://localhost:5000/api/bookings/driver-earnings-stats' : null,
+    token ? `${BACKEND_BASE_URL}/api/bookings/driver-earnings-stats` : null,
     authenticatedFetcher,
     { refreshInterval: 5000 }
   )

@@ -1,6 +1,8 @@
 import { useAuthStore } from '@/lib/store'
 
-export const authenticatedFetcher = async (url: string) => {
+export const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+
+export const authenticatedFetcher = async (path: string) => {
   const token = useAuthStore.getState().token;
   
   // Guard clause: Avoid placing a broken call onto the browser request stack if unauthenticated
@@ -8,7 +10,7 @@ export const authenticatedFetcher = async (url: string) => {
     throw new Error('No active user authorization credentials found.');
   }
 
-  const res = await fetch(url, {
+  const res = await fetch(`${BACKEND_BASE_URL}${path}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { authenticatedFetcher } from '@/lib/fetcher';
-import { useAuthStore } from '@/lib/store';
-import { 
+import { BACKEND_BASE_URL } from '@/lib/fetcher'; // Import BACKEND_BASE_URL
+import { useAuthStore } from '@/lib/store'; // Import useAuthStore
+import {
   Layers, 
   Landmark, 
   TrendingUp, 
@@ -65,15 +66,15 @@ export default function AdministrativeOversightCenter() {
   const [pricePerKm, setPricePerKm] = useState('2.50');
 
   // 1. Live SWR Data Fetching Hook for Global Ecosystem Overview Metrics
-  const { data: systemState, error: metricsError, mutate: mutateMetrics } = useSWR<SystemState>(
-    token ? 'http://localhost:5000/api/admin-dashboard/metrics' : null,
+  const { data: systemState, error: metricsError, mutate: mutateMetrics } = useSWR<SystemState>( // Corrected import
+    token ? `${BACKEND_BASE_URL}/api/admin-dashboard/metrics` : null,
     authenticatedFetcher,
     { refreshInterval: 5000 }
   );
 
   // 2. Live SWR Data Fetching Hook for Security Audit Logs Trail
   const { data: auditLogs, error: auditError, mutate: mutateAudit } = useSWR<AuditLog[]>(
-    token && activeTab === 'audit' ? 'http://localhost:5000/api/admin-dashboard/audit-logs' : null,
+    token && activeTab === 'audit' ? `${BACKEND_BASE_URL}/api/admin-dashboard/audit-logs` : null,
     authenticatedFetcher,
     { refreshInterval: 4000 }
   );
@@ -82,8 +83,8 @@ export default function AdministrativeOversightCenter() {
   const fetchUserDirectory = async () => {
     if (!token) return;
     setLoadingUsers(true);
-    try {
-      const res = await fetch('http://localhost:5000/api/admin/users', {
+    try { // Use BACKEND_BASE_URL for direct fetch calls
+      const res = await fetch(`${BACKEND_BASE_URL}/api/admin/users`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -99,7 +100,7 @@ export default function AdministrativeOversightCenter() {
   const fetchConfigVariables = async () => {
     if (!token) return;
     try {
-      const res = await fetch('http://localhost:5000/api/admin-dashboard/config', {
+      const res = await fetch(`${BACKEND_BASE_URL}/api/admin-dashboard/config`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -122,7 +123,7 @@ export default function AdministrativeOversightCenter() {
   const toggleVerification = async (userId: string, currentStatus: boolean) => {
     setSubmittingId(userId);
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+      const res = await fetch(`${BACKEND_BASE_URL}/api/admin/users/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -145,8 +146,8 @@ export default function AdministrativeOversightCenter() {
   const deleteAccount = async (userId: string) => {
     if (!confirm('Are you absolutely certain you want to permanently purge this account from the platform?')) return;
     setSubmittingId(userId);
-    try {
-      const res = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+    try { // Use BACKEND_BASE_URL for direct fetch calls
+      const res = await fetch(`${BACKEND_BASE_URL}/api/admin/users/${userId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -164,8 +165,8 @@ export default function AdministrativeOversightCenter() {
 
   const handleConfigSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const res = await fetch('http://localhost:5000/api/admin-dashboard/config', {
+    try { // Use BACKEND_BASE_URL for direct fetch calls
+      const res = await fetch(`${BACKEND_BASE_URL}/api/admin-dashboard/config`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -234,7 +235,7 @@ export default function AdministrativeOversightCenter() {
               key={tab.id}
               role="tab"
               aria-selected={activeTab === tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id)} // Removed 'as any' as it's correctly typed
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition cursor-pointer ${
                 activeTab === tab.id ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
               }`}

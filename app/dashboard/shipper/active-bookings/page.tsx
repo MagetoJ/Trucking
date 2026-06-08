@@ -3,6 +3,7 @@
 import useSWR from 'swr'
 import { authenticatedFetcher } from '@/lib/fetcher'
 import { useAuthStore } from '@/lib/store'
+import { BACKEND_BASE_URL } from '@/lib/fetcher' // Import BACKEND_BASE_URL
 import { Button } from '@/components/ui/button'
 import { MapPin, Box, RefreshCw, AlertTriangle, Trash2, CheckCircle2, ShieldCheck, Clock, Star } from 'lucide-react'
 import Link from 'next/link'
@@ -29,7 +30,7 @@ export default function ActiveBookingsPage() {
   const [selectedStars, setSelectedStars] = useState<Record<number, number>>({})
 
   const { data: bookings, error, isLoading, mutate } = useSWR<Booking[]>(
-    token ? 'http://localhost:5000/api/bookings?role=shipper' : null,
+    token ? `${BACKEND_BASE_URL}/api/bookings?role=shipper` : null,
     authenticatedFetcher,
     { refreshInterval: 4000 } // Auto-poll to catch driver acceptance changes live
   )
@@ -38,8 +39,8 @@ export default function ActiveBookingsPage() {
     if (action === 'cancel' && !confirm('Are you sure you want to cancel this freight load?')) return;
     setProcessingId(id)
     try {
-      const endpoint = action === 'cancel' ? 'cancel' : 'confirm-delivery'
-      const response = await fetch(`http://localhost:5000/api/bookings/${id}/${endpoint}`, {
+      const endpoint = action === 'cancel' ? 'cancel' : 'confirm-delivery' // Use BACKEND_BASE_URL for direct fetch calls
+      const response = await fetch(`${BACKEND_BASE_URL}/api/bookings/${id}/${endpoint}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -58,7 +59,7 @@ export default function ActiveBookingsPage() {
   const submitDriverRating = async (id: number) => {
     const score = selectedStars[id] || 5
     try {
-      const response = await fetch(`http://localhost:5000/api/bookings/${id}/rate-driver`, {
+      const response = await fetch(`${BACKEND_BASE_URL}/api/bookings/${id}/rate-driver`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -155,13 +156,13 @@ export default function ActiveBookingsPage() {
                 
                 <div className="w-full bg-muted rounded-full h-2.5 overflow-hidden">
                   <div 
-                    className={`h-full transition-all duration-500 ${booking.status === 'CANCELLED' ? 'bg-red-500' : booking.status === 'COMPLETED' ? 'bg-emerald-500' : 'bg-accent'}`}
-                    style={{ 
-                      width: booking.status === 'CANCELLED' ? '100%' : 
-                             booking.status === 'PENDING' ? '15%' : 
-                             booking.status === 'ACCEPTED' ? '45%' : 
-                             booking.status === 'IN_TRANSIT' || booking.status === 'PICKED_UP' ? '75%' : '100%' 
-                    }}
+                    className={`h-full transition-all duration-500 ${
+                      booking.status === 'CANCELLED' ? 'bg-red-500 w-full' : 
+                      booking.status === 'PENDING' ? 'bg-accent w-[15%]' : 
+                      booking.status === 'ACCEPTED' ? 'bg-accent w-[45%]' : 
+                      (booking.status === 'IN_TRANSIT' || booking.status === 'PICKED_UP') ? 'bg-accent w-[75%]' : 
+                      'bg-emerald-500 w-full'
+                    }`}
                   />
                 </div>
 
@@ -203,6 +204,8 @@ export default function ActiveBookingsPage() {
                           key={star}
                           onClick={() => setSelectedStars(prev => ({ ...prev, [booking.id]: star }))}
                           className="focus:outline-none cursor-pointer transition-transform active:scale-95"
+                          title={`Rate ${star} stars`}
+                          aria-label={`Rate ${star} stars`}
                         >
                           <Star 
                             className={`w-6 h-6 ${

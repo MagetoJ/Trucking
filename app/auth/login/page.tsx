@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/lib/store'
+import { BACKEND_BASE_URL } from '@/lib/fetcher' // Import BACKEND_BASE_URL
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Truck, Eye, EyeOff } from 'lucide-react'
@@ -14,7 +15,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-  const login = useAuthStore((state) => state.login)
+  const loginStore = useAuthStore((state) => state.login) // Renamed to avoid conflict with local login function
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,8 +23,8 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      // 1. Fire the store's login request to backend engine
-      await login(phone, password)
+      // 1. Fire the store's login request to backend engine (assuming loginStore uses BACKEND_BASE_URL internally)
+      await loginStore(phone, password)
 
       // 2. Add an explicit tiny pause to allow localStorage synchronization to finish writing
       await new Promise((resolve) => setTimeout(resolve, 50))

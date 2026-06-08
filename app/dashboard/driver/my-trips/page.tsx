@@ -2,7 +2,7 @@
 
 import useSWR from 'swr'
 import { authenticatedFetcher } from '@/lib/fetcher'
-import { useAuthStore } from '@/lib/store'
+import { BACKEND_BASE_URL, authenticatedFetcher } from '@/lib/fetcher' // Import BACKEND_BASE_URL
 import { Button } from '@/components/ui/button'
 import { MapPin, Clock, DollarSign, ChevronRight, RefreshCw, AlertCircle, Truck } from 'lucide-react'
 import Link from 'next/link'
@@ -26,7 +26,7 @@ export default function MyTripsPage() {
 
   // Fetch real matching trips assigned to this carrier profile
   const { data: trips, error, isLoading, mutate } = useSWR<Booking[]>(
-    token ? 'http://localhost:5000/api/bookings?role=driver' : null,
+    token ? `${BACKEND_BASE_URL}/api/bookings?role=driver` : null,
     authenticatedFetcher,
     { refreshInterval: 4000 }
   )

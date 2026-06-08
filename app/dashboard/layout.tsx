@@ -1,15 +1,17 @@
 'use client'
 
+import useSWR from 'swr'
 import { useAuthStore } from '@/lib/store'
 import { useRouter, usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { 
-  Truck, Home, Map, Users, LogOut, Menu, X, Settings, 
-  BarChart3, FileText, ShieldAlert, RefreshCw, Sun, Moon 
-} from 'lucide-react' // IMPORT SUN AND MOON ICONS
+  Truck, Home, Map, Users, LogOut, Menu, X, Settings, Bell, // IMPORT BELL ICON
+  BarChart3, FileText, ShieldAlert, RefreshCw, Sun, Moon
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/components/theme-provider' // IMPORT CONFIG HOOK
+import { authenticatedFetcher, BACKEND_BASE_URL } from '@/lib/fetcher' // Import BACKEND_BASE_URL
 
 export default function DashboardLayout({
   children,
@@ -17,13 +19,22 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const user = useAuthStore((state) => state.user)
+  const token = useAuthStore((state) => state.token) // <-- ADDED THIS LINE
   const logout = useAuthStore((state) => state.logout)
   const router = useRouter()
   const pathname = usePathname()
   
   // Responsive sidebar control flags
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const { theme, toggleTheme } = useTheme() // HOOK THEME VALUES HERE
+  const { theme, toggleTheme } = useTheme()
+
+  /* Dynamic Live SWR Notifications Counter Icon Widget Component */
+  const { data: alerts } = useSWR<any[]>(
+    token ? `${BACKEND_BASE_URL}/api/bookings/notifications` : null,
+    authenticatedFetcher,
+    { refreshInterval: 4000 }
+  )
+  const unreadCount = alerts?.filter(n => !n.isRead).length || 0
 
   // Automatically collapse sidebar drawer when changing pages on mobile screens
   useEffect(() => {
@@ -181,6 +192,38 @@ export default function DashboardLayout({
             <h1 className="text-base sm:text-lg font-bold text-foreground truncate max-w-[180px] sm:max-w-none">
               Welcome, {user.name}
             </h1>
+          </div>
+
+          {/* Dynamic Live SWR Notifications Counter Icon Widget Component */}
+          <div className="relative group mr-1">
+            <button 
+              className="p-2.5 border border-border bg-background rounded-xl text-foreground hover:bg-muted transition flex items-center justify-center relative cursor-pointer"
+              title="View Live System Notifications Alerts"
+            >
+              <Bell className="w-4 h-4" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white font-mono font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center animate-bounce">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+            
+            {/* Notification popover flyout panel */}
+            <div className="absolute right-0 top-11 bg-white border border-slate-200 text-black p-4 w-72 rounded-xl shadow-xl hidden group-hover:block z-50 space-y-2">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider border-b pb-1.5">Ecosystem Updates Alerts</p>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {!alerts || alerts.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic py-2 text-center">No new notifications recorded.</p>
+                ) : (
+                  alerts.map((n) => (
+                    <div key={n.id} className="text-[11px] leading-tight border-b border-slate-50 pb-1.5 last:border-0 last:pb-0">
+                      <p className="font-bold text-slate-900">{n.title}</p>
+                      <p className="text-slate-600 mt-0.5">{n.message}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
