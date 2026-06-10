@@ -188,7 +188,7 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
                     placeholder="John Doe"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent bg-background text-foreground"
+                    className="w-full px-3 py-2 text-sm border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-950 text-slate-100 placeholder:text-slate-600"
                     required
                   />
                 </div>
@@ -204,7 +204,7 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
                     placeholder="+254 712 345678"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent bg-background text-foreground"
+                    className="w-full px-3 py-2 text-sm border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-950 text-slate-100 placeholder:text-slate-600"
                     required
                   />
                 </div>
@@ -233,7 +233,7 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
                     placeholder="john@example.com"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent bg-background text-foreground"
+                    className="w-full px-3 py-2 text-sm border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-950 text-slate-100 placeholder:text-slate-600"
                     required
                   />
                 </div>
@@ -249,8 +249,7 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
                       type={showPassword ? 'text' : 'password'}
                       placeholder="At least 6 characters"
                       value={formData.password}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent bg-background text-foreground pr-10"
+                      onChange={handleChange}                      className="w-full px-3 py-2 text-sm border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-950 text-slate-100 placeholder:text-slate-600 pr-10"
                       required
                     />
                     <button
@@ -274,7 +273,7 @@ export default function RegisterModal({ isOpen, onClose, onToggleView }: AuthMod
                     placeholder="Confirm password"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent bg-background text-foreground"
+                    className="w-full px-3 py-2 text-sm border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-950 text-slate-100 placeholder:text-slate-600"
                     required
                   />
                 </div>

@@ -164,4 +164,31 @@ router.get('/metrics', requireAuth, requireSuperAdmin, async (req: Authenticated
   }
 });
 
+// PATCH: Manually override or update transaction escrow statuses (Disputes/Refunds)
+router.patch('/escrow/:id/status', requireAuth, requireSuperAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  const { status } = req.body; // HELD, RELEASED, DISPUTED, REFUNDED
+  try {
+    const transaction = await db.escrowTransaction.update({
+      where: { id: req.params.id },
+      data: { 
+        status,
+        ...(status === 'RELEASED' && { releasedAt: new Date() })
+      }
+    });
+
+    await db.auditTrail.create({
+      data: {
+        adminId: req.user!.id,
+        action: 'UPDATE_ESCROW_STATUS',
+        targetId: transaction.id,
+        details: `Escrow forced to status: ${status}`
+      }
+    });
+
+    return res.json(transaction);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;

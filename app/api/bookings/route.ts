@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/db';
 
 // 1. View Available Jobs or My Accepted Jobs
 export async function GET(request: Request) {
@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   try {
     if (type === 'available') {
       // Drivers can only see the basic load post request.
-      const availableLoads = await prisma.booking.findMany({
+      const availableLoads = await db.booking.findMany({
         where: { status: 'PENDING' },
         include: {
           shipper: { select: { id: true, name: true, email: true } } // Includes shipper details upon view
@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     }
 
     if (type === 'my-jobs' && driverId) {
-      const workingJobs = await prisma.booking.findMany({
+      const workingJobs = await db.booking.findMany({
         where: { driverId: driverId },
         include: {
           shipper: { select: { name: true, email: true } } 

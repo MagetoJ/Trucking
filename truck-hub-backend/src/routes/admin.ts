@@ -215,4 +215,44 @@ router.get('/analytics', async (req, res) => {
   }
 })
 
+// ── DRIVER VETTING ───────────────────────────────────────
+
+// GET: Fetch all driver document configurations pending supervisor inspection
+router.get('/documents/review', async (req, res) => {
+  try {
+    const docs = await db.driverDocument.findMany({
+      include: {
+        driver: { select: { id: true, name: true, phone: true, email: true } }
+      },
+      orderBy: { insuranceExpiry: 'asc' }
+    });
+    return res.json(docs);
+  } catch (e: any) {
+    return res.status(500).json({ error: e.message });
+  }
+});
+
+// PATCH: Approve or Reject a driver's legal credentials packet
+router.patch('/documents/:id/status', async (req, res) => {
+  const { status } = req.body; // APPROVED or REJECTED
+  try {
+    const updatedDoc = await db.driverDocument.update({
+      where: { id: req.params.id },
+      data: { status }
+    });
+
+    // Automatically verify the user profile on the platform network if documents match approval parameters
+    if (status === 'APPROVED') {
+      await db.user.update({
+        where: { id: updatedDoc.driverId },
+        data: { verified: true }
+      });
+    }
+
+    return res.json({ message: 'Vetting status updated successfully.', updatedDoc });
+  } catch (e: any) {
+    return res.status(500).json({ error: e.message });
+  }
+});
+
 export default router;

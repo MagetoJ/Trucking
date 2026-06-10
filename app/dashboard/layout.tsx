@@ -10,8 +10,7 @@ import {
   BarChart3, FileText, ShieldAlert, RefreshCw, Sun, Moon
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useTheme } from '@/components/theme-provider' // IMPORT CONFIG HOOK
-import { authenticatedFetcher, BACKEND_BASE_URL } from '@/lib/fetcher' // Import BACKEND_BASE_URL
+import { authenticatedFetcher } from '@/lib/fetcher'
 
 export default function DashboardLayout({
   children,
@@ -21,16 +20,14 @@ export default function DashboardLayout({
   const user = useAuthStore((state) => state.user)
   const token = useAuthStore((state) => state.token) // <-- ADDED THIS LINE
   const logout = useAuthStore((state) => state.logout)
-  const router = useRouter()
+  const router = useRouter() // <-- ADDED THIS LINE
   const pathname = usePathname()
   
-  // Responsive sidebar control flags
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const { theme, toggleTheme } = useTheme()
 
   /* Dynamic Live SWR Notifications Counter Icon Widget Component */
   const { data: alerts } = useSWR<any[]>(
-    token ? `${BACKEND_BASE_URL}/api/bookings/notifications` : null,
+    token ? '/api/bookings/notifications' : null,
     authenticatedFetcher,
     { refreshInterval: 4000 }
   )
@@ -51,8 +48,8 @@ export default function DashboardLayout({
   // This prevents child components from making broken 401 API fetches.
   if (!user) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background text-muted-foreground font-mono text-sm">
-        <RefreshCw className="w-5 h-5 animate-spin text-accent mb-2" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 text-slate-400 font-mono text-xs">
+        <RefreshCw className="w-5 h-5 animate-spin text-indigo-500 mb-2" />
         VALIDATING AUTHENTICATION SESSION...
       </div>
     )
@@ -65,22 +62,22 @@ export default function DashboardLayout({
 
   // Common navigation items
   const commonItems = [
-    { icon: Home, label: 'Dashboard', href: '/dashboard' },
-    { icon: Users, label: 'Users', href: '/dashboard/users' },
-    { icon: Map, label: 'Tracking', href: '/dashboard/tracking' },
+    { icon: Home, label: 'Dashboard', href: '/dashboard' }, // Updated label
+    { icon: Users, label: 'Users Directory', href: '/dashboard/users' }, // Updated label
+    { icon: Map, label: 'Live Tracking Map', href: '/dashboard/tracking' }, // Updated label
   ]
 
   // Role-specific navigation
   const shipperItems = [
-    { icon: FileText, label: 'Post Load', href: '/dashboard/shipper/post-load' },
+    { icon: FileText, label: 'Post Cargo Load', href: '/dashboard/shipper/post-load' }, // Updated label
     { icon: BarChart3, label: 'Active Bookings', href: '/dashboard/shipper/active-bookings' },
-    { icon: Settings, label: 'Payment Methods', href: '/dashboard/shipper/payment-method' },
+    { icon: Settings, label: 'Escrow & Payments', href: '/dashboard/shipper/payment-method' }, // Updated label
   ]
 
   const driverItems = [
-    { icon: FileText, label: 'Available Loads', href: '/dashboard/driver/available-loads' },
-    { icon: BarChart3, label: 'My Trips', href: '/dashboard/driver/my-trips' },
-    { icon: Settings, label: 'Earnings', href: '/dashboard/driver/earnings' },
+    { icon: FileText, label: 'Marketplace Offers', href: '/dashboard/driver/available-loads' }, // Updated label
+    { icon: BarChart3, label: 'My Assigned Trips', href: '/dashboard/driver/my-trips' }, // Updated label
+    { icon: Settings, label: 'Earning Ledger', href: '/dashboard/driver/earnings' }, // Updated label
   ]
 
   const adminItems = [
@@ -92,11 +89,11 @@ export default function DashboardLayout({
     : user.role === 'shipper' ? shipperItems : driverItems
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex font-sans antialiased">
       
-      {/* Mobile Sidebar Backdrop Overlay */}
+      {/* Mobile Drawer Backdrop */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-black/50 md:hidden backdrop-blur-xs"
           onClick={() => setSidebarOpen(false)}
         />
@@ -104,17 +101,17 @@ export default function DashboardLayout({
 
       {/* Adaptive Responsive Navigation Drawer */}
       <aside
-        className={`fixed md:sticky top-0 left-0 h-screen bg-sidebar border-r border-sidebar-border transition-transform duration-300 z-50 w-64 shrink-0 flex flex-col ${
+        className={`fixed md:sticky top-0 left-0 h-screen bg-slate-900 border-r border-slate-900/60 transition-transform duration-300 z-50 w-64 shrink-0 flex flex-col ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
         {/* Brand Banner */}
-        <div className="h-16 border-b border-sidebar-border flex items-center px-6 justify-between">
+        <div className="h-16 border-b border-slate-950 flex items-center px-6 justify-between">
           <Link href="/dashboard" className="flex items-center gap-2">
-            <Truck className="w-8 h-8 text-sidebar-accent" />
-            <span className="text-lg font-bold text-sidebar-foreground">TruckHub</span>
+            <Truck className="w-6 h-6 text-indigo-500" />
+            <span className="text-base font-black tracking-tight text-white">TruckHub Control</span>
           </Link>
-          <button onClick={() => setSidebarOpen(false)} className="p-1 rounded text-sidebar-foreground md:hidden hover:bg-sidebar-accent/10">
+          <button onClick={() => setSidebarOpen(false)} className="p-1 rounded text-slate-400 md:hidden hover:bg-slate-800">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -125,8 +122,8 @@ export default function DashboardLayout({
             <Link key={item.href} href={item.href} className="block">
               <Button
                 variant="ghost"
-                className={`w-full justify-start gap-3 text-sidebar-foreground min-h-[44px] px-4 rounded-xl hover:bg-sidebar-accent/10 ${
-                  pathname === item.href ? 'bg-sidebar-accent/15 font-bold border-l-4 border-sidebar-primary' : ''
+                className={`w-full justify-start gap-3 text-slate-400 h-10 px-3 rounded-lg hover:bg-slate-800 hover:text-slate-100 ${
+                  pathname === item.href ? 'bg-indigo-600 text-white font-bold shadow-md hover:bg-indigo-600' : ''
                 }`}
               >
                 <item.icon className="w-5 h-5 shrink-0" />
@@ -135,14 +132,14 @@ export default function DashboardLayout({
             </Link>
           ))}
 
-          <div className="my-4 border-t border-sidebar-border/60"></div>
+          <div className="my-4 border-t border-slate-850"></div>
 
           {navItems.map((item) => (
             <Link key={item.href} href={item.href} className="block">
               <Button
                 variant="ghost"
-                className={`w-full justify-start gap-3 text-sidebar-foreground min-h-[44px] px-4 rounded-xl hover:bg-sidebar-accent/10 ${
-                  pathname === item.href ? 'bg-sidebar-accent/15 font-bold border-l-4 border-sidebar-primary' : ''
+                className={`w-full justify-start gap-3 text-slate-400 h-10 px-3 rounded-lg hover:bg-slate-800 hover:text-slate-100 ${
+                  pathname === item.href ? 'bg-indigo-600 text-white font-bold shadow-md hover:bg-indigo-600' : ''
                 }`}
               >
                 <item.icon className="w-5 h-5 shrink-0" />
@@ -152,22 +149,22 @@ export default function DashboardLayout({
           ))}
         </nav>
 
-        {/* Footer Identity Context */}
-        <div className="absolute bottom-0 left-0 right-0 border-t border-sidebar-border p-4 bg-sidebar-accent/5">
+        {/* Sidebar Profile Card */}
+        <div className="border-t border-slate-900 p-4 bg-slate-900/40">
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-sidebar-accent/20 flex items-center justify-center text-sidebar-foreground font-bold shrink-0">
+              <div className="w-8 h-8 rounded-full bg-indigo-600/20 flex items-center justify-center text-indigo-400 font-bold shrink-0 text-xs">
                 {user.name.charAt(0)}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-sidebar-foreground truncate">{user.name}</p>
-                <p className="text-xs text-sidebar-foreground/70 capitalize">{user.role}</p>
+                <p className="text-xs font-bold text-slate-200 truncate">{user.name}</p>
+                <p className="text-[10px] font-mono text-slate-500 capitalize">{user.role}</p>
               </div>
             </div>
             <Button
               onClick={handleLogout}
               variant="outline"
-              className="w-full text-sidebar-foreground border-sidebar-accent/30 hover:bg-sidebar-accent/10 justify-start gap-2 min-h-[40px] cursor-pointer text-xs font-bold"
+              className="w-full text-slate-300 border-slate-800 hover:bg-slate-800 justify-start gap-2 h-8 text-xs font-bold cursor-pointer"
             >
               <LogOut className="w-4 h-4 shrink-0" />
               Logout
@@ -177,79 +174,70 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main Framework Viewport Content Portal Area */}
-      <div className="flex-1 min-w-0 flex flex-col h-screen overflow-hidden">
+      <div className="flex-1 min-w-0 flex flex-col h-screen overflow-hidden"> 
         
         {/* Top Sticky Header */}
-        <header className="h-16 bg-card border-b border-border flex items-center px-4 sm:px-6 justify-between gap-4 shrink-0 sticky top-0 z-30">
+        <header className="h-16 bg-slate-950 border-b border-slate-900/40 flex items-center px-6 justify-between gap-4 shrink-0 sticky top-0 z-30">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="text-foreground hover:bg-muted p-2 rounded-xl focus:ring-2 focus:ring-accent outline-none cursor-pointer md:hidden"
-              aria-label="Toggle Navigation Bar Drawer Menu"
+              className="text-slate-400 hover:bg-slate-900 p-2 rounded-lg md:hidden cursor-pointer"
+              aria-label="Toggle Menu"
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="w-5 h-5" />
             </button>
-            <h1 className="text-base sm:text-lg font-bold text-foreground truncate max-w-[180px] sm:max-w-none">
-              Welcome, {user.name}
+            <h1 className="text-sm font-bold text-slate-200 truncate">
+              Oversight System Console / <span className="text-indigo-400 font-mono text-xs uppercase ml-1">{user.role}</span>
             </h1>
           </div>
 
           {/* Dynamic Live SWR Notifications Counter Icon Widget Component */}
-          <div className="relative group mr-1">
-            <button 
-              className="p-2.5 border border-border bg-background rounded-xl text-foreground hover:bg-muted transition flex items-center justify-center relative cursor-pointer"
-              title="View Live System Notifications Alerts"
-            >
-              <Bell className="w-4 h-4" />
+          <div className="flex items-center gap-4">
+            {/* Notifications Popover */}
+            <div className="relative group">
+              <button className="p-2 border border-slate-900 bg-slate-900/40 rounded-lg text-slate-300 hover:bg-slate-800 transition flex items-center justify-center relative cursor-pointer">
+                <Bell className="w-4 h-4" />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white font-mono font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center animate-bounce">
+                <span className="absolute -top-1 -right-1 bg-orange-500 text-white font-mono font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
                   {unreadCount}
                 </span>
               )}
-            </button>
+              </button>
             
-            {/* Notification popover flyout panel */}
-            <div className="absolute right-0 top-11 bg-white border border-slate-200 text-black p-4 w-72 rounded-xl shadow-xl hidden group-hover:block z-50 space-y-2">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider border-b pb-1.5">Ecosystem Updates Alerts</p>
+              <div className="absolute right-0 top-10 bg-slate-900 border border-slate-850 text-slate-200 p-4 w-72 rounded-xl shadow-2xl hidden group-hover:block z-50 space-y-2 animate-fade-in">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-800 pb-1.5 font-mono">Ecosystem Event Log</p>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {!alerts || alerts.length === 0 ? (
-                  <p className="text-xs text-slate-400 italic py-2 text-center">No new notifications recorded.</p>
+                  <p className="text-xs text-slate-500 italic py-2 text-center">No unread system notices.</p>
                 ) : (
                   alerts.map((n) => (
-                    <div key={n.id} className="text-[11px] leading-tight border-b border-slate-50 pb-1.5 last:border-0 last:pb-0">
-                      <p className="font-bold text-slate-900">{n.title}</p>
-                      <p className="text-slate-600 mt-0.5">{n.message}</p>
+                    <div key={n.id} className="text-[11px] leading-tight border-b border-slate-850 pb-1.5 last:border-0 last:pb-0">
+                      <p className="font-bold text-slate-200">{n.title}</p>
+                      <p className="text-slate-400 mt-0.5 font-sans">{n.message}</p>
                     </div>
                   ))
                 )}
               </div>
             </div>
           </div>
+            
+            <div className="w-px h-6 bg-slate-900"></div>
 
-          <div className="flex items-center gap-3">
-            {/* Dark Mode Sync Toggle Switch Trigger */}
-            <button
-              onClick={toggleTheme}
-              className="p-2.5 border border-border bg-background rounded-xl text-foreground hover:bg-muted active:scale-95 transition-all cursor-pointer flex items-center justify-center shadow-xs"
-              title={`Toggle ${theme === 'light' ? 'Dark' : 'Light'} Color Layout Theme Mode`}
-            >
-              {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4 text-amber-400" />}
-            </button>
-
+            {/* User Profile Widget */}
             <div className="flex items-center gap-2">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold text-foreground">{user.name}</p>
-                <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
+                <p className="text-xs font-bold text-slate-200">{user.name}</p>
+                <p className="text-[10px] font-mono text-slate-500">Live Secure Connection</p>
               </div>
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent font-black shrink-0">
+              <div className="w-8 h-8 rounded-full bg-indigo-600/10 text-indigo-400 font-bold flex items-center justify-center text-xs">
                 {user.name.charAt(0)}
               </div>
             </div>
           </div>
         </header>
 
-        {/* Main Content Area Container Block with Fluid Overflow Scrolling properties */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-background text-foreground">
+        {/* Scrollable Content Pane */}
+        <main className="flex-1 overflow-y-auto p-6 bg-slate-950 text-slate-200">
           {children}
         </main>
       </div>

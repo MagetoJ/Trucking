@@ -32,7 +32,10 @@ interface AuthState {
 }
 
 // Global variable pointing to your standalone Express application port
-const BACKEND_API_URL = 'http://localhost:5000/api';
+const BACKEND_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+const BACKEND_API_URL = `${BACKEND_BASE}/api`;
+
+
 
 export const useAuthStore = create<AuthState>()(
   persist(

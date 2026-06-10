@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/db';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   if (!shipperId) return NextResponse.json({ error: 'Missing Identity' }, { status: 400 });
 
   try {
-    const shipperLoads = await prisma.booking.findMany({
+    const shipperLoads = await db.booking.findMany({
       where: { shipperId },
       include: {
         driver: {

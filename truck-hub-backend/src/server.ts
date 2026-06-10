@@ -13,9 +13,12 @@ dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 5000
 
-// Activate cross-origin permissions to communicate with your standalone Frontend folder
+// Dynamic CORS registration: uses FRONTEND_URL environment variable in production,
+// falling back to local port 3000 during development workflows.
+const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:3000';
+
 app.use(cors({
-  origin: 'http://localhost:3000', // Matches your Next.js development server URL
+  origin: allowedOrigin,
   credentials: true
 }))
 

@@ -83,7 +83,7 @@ export default function LoginModal({ isOpen, onClose, onToggleView }: LoginModal
                 placeholder="+254 712 345678"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent bg-background text-foreground"
+                className="w-full px-3 py-2 text-sm border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-950 text-slate-100 placeholder:text-slate-600"
                 required
               />
             </div>
@@ -98,8 +98,7 @@ export default function LoginModal({ isOpen, onClose, onToggleView }: LoginModal
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter your password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent bg-background text-foreground pr-10"
+                  onChange={(e) => setPassword(e.target.value)}                  className="w-full px-3 py-2 text-sm border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-950 text-slate-100 placeholder:text-slate-600 pr-10"
                   required
                 />
                 <button

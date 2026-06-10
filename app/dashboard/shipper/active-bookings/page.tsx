@@ -1,9 +1,8 @@
 'use client'
 
 import useSWR from 'swr'
-import { authenticatedFetcher } from '@/lib/fetcher'
 import { useAuthStore } from '@/lib/store'
-import { BACKEND_BASE_URL } from '@/lib/fetcher' // Import BACKEND_BASE_URL
+import { BACKEND_BASE_URL, authenticatedFetcher } from '@/lib/fetcher'
 import { Button } from '@/components/ui/button'
 import { MapPin, Box, RefreshCw, AlertTriangle, Trash2, CheckCircle2, ShieldCheck, Clock, Star } from 'lucide-react'
 import Link from 'next/link'
@@ -30,7 +29,7 @@ export default function ActiveBookingsPage() {
   const [selectedStars, setSelectedStars] = useState<Record<number, number>>({})
 
   const { data: bookings, error, isLoading, mutate } = useSWR<Booking[]>(
-    token ? `${BACKEND_BASE_URL}/api/bookings?role=shipper` : null,
+    token ? '/api/bookings?role=shipper' : null,
     authenticatedFetcher,
     { refreshInterval: 4000 } // Auto-poll to catch driver acceptance changes live
   )
@@ -92,7 +91,7 @@ export default function ActiveBookingsPage() {
   )
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-12 text-black">
+    <div className="space-y-6 max-w-5xl mx-auto pb-12 text-foreground">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-bold text-foreground">Cargo Tracking Control Center</h2>
@@ -157,18 +156,15 @@ export default function ActiveBookingsPage() {
                 <div className="w-full bg-muted rounded-full h-2.5 overflow-hidden">
                   <div 
                     className={`h-full transition-all duration-500 ${
-                      booking.status === 'CANCELLED' ? 'bg-red-500 w-full' : 
-                      booking.status === 'PENDING' ? 'bg-accent w-[15%]' : 
-                      booking.status === 'ACCEPTED' ? 'bg-accent w-[45%]' : 
-                      (booking.status === 'IN_TRANSIT' || booking.status === 'PICKED_UP') ? 'bg-accent w-[75%]' : 
-                      'bg-emerald-500 w-full'
+                      booking.status === 'CANCELLED' ? 'bg-red-500 w-full' : booking.status === 'COMPLETED' ? 'bg-emerald-500 w-full' : 'bg-accent'
                     }`}
+                    style={{ width: booking.status === 'CANCELLED' || booking.status === 'COMPLETED' ? '100%' : `${booking.progress}%` }}
                   />
                 </div>
 
                 <div className="flex justify-between items-center text-xs text-muted-foreground pt-1">
                   <div className="flex items-center gap-1.5 bg-primary/5 text-foreground px-2.5 py-1 rounded-md">
-                    <Clock className="w-3.5 h-3.5 text-accent" />
+                    <Clock className="w-3.5 h-3.5 text-indigo-400" />
                     <span>ETA Status: <strong>{booking.status === 'CANCELLED' ? 'N/A' : booking.eta}</strong></span>
                   </div>
                   <span className="font-mono uppercase font-bold text-accent">Status: {booking.status}</span>
@@ -178,14 +174,14 @@ export default function ActiveBookingsPage() {
               {/* Conditional Visibility Action Logic Section */}
               {booking.driver ? (
                 /* Driver details display ONLY during active transit */
-                <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="mt-4 p-4 bg-muted/60 border border-border rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-accent/10 text-accent font-black flex items-center justify-center text-sm">
                       {booking.driver.name.charAt(0)}
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-slate-900">Assigned Driver: {booking.driver.name}</p>
-                      <p className="text-xs text-slate-500">Carrier Performance Score: {booking.driver.rating?.toFixed(1) || '5.0'} ⭐</p>
+                      <p className="text-sm font-bold text-foreground">Assigned Driver: {booking.driver.name}</p>
+                      <p className="text-xs text-muted-foreground">Carrier Performance Score: {booking.driver.rating?.toFixed(1) || '5.0'} ⭐</p>
                     </div>
                   </div>
                   <div className="text-xs font-mono bg-white border px-3 py-1.5 rounded-lg text-slate-800 self-start sm:self-center">
@@ -194,9 +190,9 @@ export default function ActiveBookingsPage() {
                 </div>
               ) : booking.status === 'COMPLETED' && !ratedJobIds.includes(booking.id) ? (
                 /* Driver disappears upon completion, replaced by the rating block prompt */
-                <div className="p-4 bg-orange-50/50 border border-orange-200 rounded-xl space-y-3">
-                  <p className="text-sm font-bold text-orange-800">Rate Your Carrier Service</p>
-                  <p className="text-xs text-slate-600">The driver has disappeared from active contact fields. Please submit a service score rating to release feedback metrics:</p>
+                <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-3">
+                  <p className="text-sm font-bold text-amber-500">Rate Your Carrier Service</p>
+                  <p className="text-xs text-muted-foreground">The driver has disappeared from active contact fields. Please submit a service score rating to release feedback metrics:</p>
                   <div className="flex items-center gap-3 pt-1">
                     <div className="flex items-center gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
@@ -226,13 +222,13 @@ export default function ActiveBookingsPage() {
                   </div>
                 </div>
               ) : booking.status === 'PENDING' ? (
-                <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700 font-medium">
+                <div className="mt-4 p-3 bg-muted/60 border border-border rounded-xl text-xs text-muted-foreground font-medium">
                   ⌛ Waiting for a verified carrier to accept and claim this haulage specification load...
                 </div>
               ) : null}
 
               {/* Functional Controls Action Row */}
-              <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-slate-100">
+              <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-border">
                 <div>
                   {booking.status === 'PENDING' && (
                     <Button 

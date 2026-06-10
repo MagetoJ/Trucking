@@ -67,14 +67,14 @@ export default function AdministrativeOversightCenter() {
 
   // 1. Live SWR Data Fetching Hook for Global Ecosystem Overview Metrics
   const { data: systemState, error: metricsError, mutate: mutateMetrics } = useSWR<SystemState>( // Corrected import
-    token ? `${BACKEND_BASE_URL}/api/admin-dashboard/metrics` : null,
+    token ? '/api/admin-dashboard/metrics' : null,
     authenticatedFetcher,
     { refreshInterval: 5000 }
   );
 
   // 2. Live SWR Data Fetching Hook for Security Audit Logs Trail
   const { data: auditLogs, error: auditError, mutate: mutateAudit } = useSWR<AuditLog[]>(
-    token && activeTab === 'audit' ? `${BACKEND_BASE_URL}/api/admin-dashboard/audit-logs` : null,
+    token && activeTab === 'audit' ? '/api/admin-dashboard/audit-logs' : null,
     authenticatedFetcher,
     { refreshInterval: 4000 }
   );
@@ -355,10 +355,10 @@ export default function AdministrativeOversightCenter() {
         {/* TAB 2: USER DIRECTORY COMPONENT */}
         {activeTab === 'users' && (
           <div className="bg-slate-900/20 border border-slate-900 rounded-2xl overflow-hidden shadow-xl">
-            <div className="p-4 overflow-x-auto">
+            <div className="p-4 overflow-x-auto text-foreground">
               <table className="w-full text-left whitespace-nowrap text-xs border-collapse">
                 <thead>
-                  <tr className="text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-900 bg-slate-900/10">
+                  <tr className="text-slate-400 font-mono font-bold uppercase tracking-wider text-[11px] border-b border-slate-900 bg-slate-900/50">
                     <th className="p-3">User Legal Name</th>
                     <th className="p-3">Email Address</th>
                     <th className="p-3">Phone Connection</th>
@@ -466,7 +466,7 @@ export default function AdministrativeOversightCenter() {
               </span>
             </div>
             
-            <div className="p-4 overflow-x-auto">
+            <div className="p-4 overflow-x-auto text-foreground">
               {auditError && (
                 <div className="p-4 text-xs font-mono text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl mb-4">
                   Failed to synchronize security trail: {auditError.message}
@@ -474,8 +474,8 @@ export default function AdministrativeOversightCenter() {
               )}
               
               <table className="w-full text-left whitespace-nowrap text-xs border-collapse">
-                <thead>
-                  <tr className="text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-900 bg-slate-900/10">
+                <thead> 
+                  <tr className="text-slate-400 font-mono font-bold uppercase tracking-wider text-[11px] border-b border-slate-900 bg-slate-900/50">
                     <th className="p-3">Timestamp Log</th>
                     <th className="p-3">Supervisor ID</th>
                     <th className="p-3">Action Enforced</th>

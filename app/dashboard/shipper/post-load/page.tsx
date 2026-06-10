@@ -121,7 +121,7 @@ function PostLoadFormContent() {
               placeholder="e.g. Nairobi Industrial Area"
               value={formData.origin}
               onChange={handleChange}
-              className="w-full px-4 py-2.5 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-accent outline-none"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-100 placeholder:text-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm font-medium transition-all"
               required
             />
           </div>
@@ -135,7 +135,7 @@ function PostLoadFormContent() {
               placeholder="e.g. Mombasa Port"
               value={formData.destination}
               onChange={handleChange}
-              className="w-full px-4 py-2.5 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-accent outline-none"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-100 placeholder:text-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm font-medium transition-all"
               required
             />
           </div>
@@ -151,7 +151,7 @@ function PostLoadFormContent() {
             value={formData.description}
             onChange={handleChange}
             rows={4}
-            className="w-full px-4 py-2.5 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-accent outline-none resize-none"
+            className="w-full px-4 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-100 placeholder:text-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm font-medium transition-all resize-none"
             required
           />
         </div>
@@ -165,7 +165,7 @@ function PostLoadFormContent() {
               placeholder="e.g. 7500"
               value={formData.weight}
               onChange={handleChange}
-              className="w-full px-4 py-2.5 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-accent outline-none"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-100 placeholder:text-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm font-medium transition-all"
               required
             />
           </div>
@@ -179,7 +179,7 @@ function PostLoadFormContent() {
               placeholder="e.g. 600"
               value={formData.price}
               onChange={handleChange}
-              className="w-full px-4 py-2.5 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-accent outline-none"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-100 placeholder:text-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm font-medium transition-all"
               required
             />
           </div>

@@ -73,7 +73,7 @@ export default function VerifyPage() {
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 maxLength={6}
-                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent bg-background text-foreground placeholder:text-muted-foreground text-center text-2xl tracking-widest font-mono"
+                className="w-full px-4 py-2 border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-950 text-slate-100 placeholder:text-slate-600 text-center text-2xl tracking-widest font-mono"
                 required
               />
               <p className="text-xs text-muted-foreground mt-2">Enter the 6-digit code sent to your phone</p>

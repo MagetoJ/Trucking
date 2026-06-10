@@ -1,8 +1,8 @@
 'use client'
 
 import useSWR from 'swr'
-import { authenticatedFetcher } from '@/lib/fetcher'
-import { BACKEND_BASE_URL, authenticatedFetcher } from '@/lib/fetcher' // Import BACKEND_BASE_URL
+import { useAuthStore } from '@/lib/store'
+import { BACKEND_BASE_URL, authenticatedFetcher } from '@/lib/fetcher'
 import { Button } from '@/components/ui/button'
 import { MapPin, Clock, DollarSign, ChevronRight, RefreshCw, AlertCircle, Truck } from 'lucide-react'
 import Link from 'next/link'
@@ -26,7 +26,7 @@ export default function MyTripsPage() {
 
   // Fetch real matching trips assigned to this carrier profile
   const { data: trips, error, isLoading, mutate } = useSWR<Booking[]>(
-    token ? `${BACKEND_BASE_URL}/api/bookings?role=driver` : null,
+    token ? '/api/bookings?role=driver' : null,
     authenticatedFetcher,
     { refreshInterval: 4000 }
   )
@@ -56,7 +56,7 @@ export default function MyTripsPage() {
   const myAssignedTrips = trips?.filter(t => t.status !== 'PENDING') || []
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto text-black">
+    <div className="space-y-6 max-w-5xl mx-auto text-foreground">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-bold text-foreground">My Trips Manifest</h2>
@@ -106,7 +106,7 @@ export default function MyTripsPage() {
                 {trip.status !== 'COMPLETED' && trip.status !== 'CANCELLED' && (
                   <div className="mb-4 space-y-1">
                     <div className="w-full bg-slate-100 rounded-full h-2">
-                      <div
+                      <div 
                         className="h-2 rounded-full bg-accent transition-all duration-300"
                         style={{ width: `${trip.progress || 10}%` }}
                       />
@@ -116,14 +116,14 @@ export default function MyTripsPage() {
 
                 {/* Live Shipper Client Details Box - Will hide automatically upon COMPLETION since server returns null */}
                 {trip.shipper ? (
-                  <div className="my-4 p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="my-4 p-3.5 bg-muted/60 border border-border rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-full bg-indigo-600/10 text-indigo-600 font-bold flex items-center justify-center text-xs">
                         {trip.shipper.name.charAt(0)}
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-slate-900">Client Shipper: {trip.shipper.name}</p>
-                        <p className="text-[11px] text-slate-500">Shipper Account Rating: {trip.shipper.rating?.toFixed(1) || '5.0'} ⭐</p>
+                        <p className="text-xs font-bold text-foreground">Client Shipper: {trip.shipper.name}</p>
+                        <p className="text-[11px] text-muted-foreground">Shipper Account Rating: {trip.shipper.rating?.toFixed(1) || '5.0'} ⭐</p>
                       </div>
                     </div>
                     <div className="text-xs font-mono bg-white border px-2.5 py-1 rounded text-slate-800 self-start sm:self-center">

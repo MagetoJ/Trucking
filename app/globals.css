@@ -49,63 +49,61 @@
 }
 
 :root {
-  --background: 0 0% 100%;
-  --foreground: 0 0% 0%; 
-  --card: 0 0% 100%;
-  --card-foreground: 0 0% 0%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 0%;
-  --primary: 210 60% 20%;
-  --primary-foreground: 0 0% 98%;
+  /* Aligns standard layouts to match the Admin Control deep slate backdrop variables */
+  --background: 222 47% 6%;
+  --foreground: 213 31% 91%; 
+  --card: 222 47% 9%;
+  --card-foreground: 213 31% 95%;
+  --popover: 222 47% 9%;
+  --popover-foreground: 213 31% 91%;
+  
+  /* Primary Navy base updated to Slate Admin layout shades */
+  --primary: 210 40% 98%;
+  --primary-foreground: 222 47% 6%;
+  
+  /* Accent Orange remains highly energetic across checkouts and timelines */
   --secondary: 16 100% 50%;
   --secondary-foreground: 0 0% 100%;
-  --muted: 210 15% 94%;
-  --muted-foreground: 210 10% 25%; 
+  
+  --muted: 217 32% 14%;
+  --muted-foreground: 215 20% 65%; 
+  
   --accent: 16 100% 50%;
-  --accent-foreground: 0 0% 100%;
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 100%;
-  --border: 210 15% 92%;
-  --input: 210 15% 92%;
-  --ring: 16 100% 50%;
+  --accent-foreground: 222 47% 6%;
+  
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 210 40% 98%;
+  
+  --border: 217 32% 14%;
+  --input: 217 32% 14%;
+  --ring: 224 76% 48%; /* Indigo Admin Highlight Ring */
+  
   --chart-1: 16 100% 50%;
   --chart-2: 210 60% 35%;
   --chart-3: 210 40% 50%;
   --chart-4: 210 15% 65%;
   --chart-5: 210 10% 80%;
-  --radius: 0.75rem;
   
-  /* Sidebar Light Variable Bounds */
-  --sidebar: 210 60% 18%;
-  --sidebar-foreground: 0 0% 98%;
-  --sidebar-primary: 16 100% 50%;
-  --sidebar-primary-foreground: 210 60% 18%;
-  --sidebar-accent: 16 100% 50%;
-  --sidebar-accent-foreground: 210 60% 18%;
-  --sidebar-border: 210 40% 28%;
-  --sidebar-ring: 16 100% 50%;
+  --radius: 0.85rem;
+  
+  /* Sidebar Layout Module Configuration */
+  --sidebar: 222 47% 4%;
+  --sidebar-foreground: 213 31% 91%;
+  --sidebar-primary: 224 76% 48%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 217 32% 14%;
+  --sidebar-accent-foreground: 213 31% 95%;
+  --sidebar-border: 217 32% 10%;
+  --sidebar-ring: 224 76% 48%;
 }
 
 .dark {
-  --background: 222 47% 11%;
+  /* Keeps dark mode identical to preserve design parameters globally */
+  --background: 222 47% 6%;
   --foreground: 213 31% 91%;
-  --card: 222 47% 13%;
-  --card-foreground: 213 31% 91%;
-  --popover: 222 47% 13%;
-  --popover-foreground: 213 31% 91%;
-  --primary: 210 40% 98%;
-  --primary-foreground: 222 47% 11%;
-  --secondary: 217 32% 17%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217 32% 17%;
-  --muted-foreground: 215 20% 65%;
-  --accent: 16 100% 50%;
-  --accent-foreground: 222 47% 11%;
-  --destructive: 0 63% 31%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 217 32% 22%;
-  --input: 217 32% 22%;
-  --ring: 16 100% 50%;
+  --card: 222 47% 9%;
+  --card-foreground: 213 31% 95%;
+  --border: 217 32% 14%;
   --chart-1: 16 100% 50%;
   --chart-2: 210 40% 60%;
   --chart-3: 210 60% 45%;

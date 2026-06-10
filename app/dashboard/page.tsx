@@ -1,8 +1,8 @@
 'use client'
 
 import useSWR from 'swr'
-import { authenticatedFetcher } from '@/lib/fetcher'
-import { BACKEND_BASE_URL, authenticatedFetcher } from '@/lib/fetcher' // Import BACKEND_BASE_URL
+import { useAuthStore } from '@/lib/store'
+import { BACKEND_BASE_URL, authenticatedFetcher } from '@/lib/fetcher' 
 import { BarChart3, TrendingUp, Users, DollarSign, MapPin, RefreshCw, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -25,7 +25,7 @@ export default function DashboardPage() {
   // General single call architecture for real role sync
   const roleQueryParam = user?.role === 'shipper' ? 'shipper' : 'driver'
   const { data: bookings, error, isLoading, mutate } = useSWR<Booking[]>(
-    token ? `${BACKEND_BASE_URL}/api/bookings?role=${roleQueryParam}` : null,
+    token ? `/api/bookings?role=${roleQueryParam}` : null,
     authenticatedFetcher,
     { refreshInterval: 5000 }
   )
@@ -240,19 +240,23 @@ export default function DashboardPage() {
           ) : (
             availableLoads.map((load) => (
               <div key={load.id} className="flex items-center gap-4 pb-4 border-b border-border last:border-b-0">
-                <div className="w-12 h-12 rounded-lg bg-accent/20 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-lg bg-muted/60 flex items-center justify-center">
                   <MapPin className="w-6 h-6 text-accent" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-foreground">Load #{load.id} - {load.origin} to {load.destination}</p>
+                  {/* Structural cargo metadata descriptions are broadcasted publicly */}
+                  <p className="font-bold text-slate-200">Load #{load.id} — {load.origin} to {load.destination}</p>
                   <div className="flex gap-4 mt-1">
-                    <span className="text-xs bg-accent/10 text-accent px-2 py-0.5 rounded font-mono">{load.weight}</span>
-                    <span className="text-xs text-muted-foreground">Cargo: {load.cargo}</span>
+                    <span className="text-xs bg-muted/60 text-foreground px-2 py-0.5 rounded font-mono font-bold">{load.weight}</span>
+                    <span className="text-xs text-muted-foreground font-medium">Cargo specification: <strong className="text-foreground">{load.cargo}</strong></span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-foreground">{load.price}</p>
-                  <span className="text-[10px] uppercase font-mono text-emerald-500 font-bold">Open</span>
+                  <p className="font-mono font-black text-emerald-400 text-sm">{load.price}</p>
+                  {/* Indicates that the publisher profile is protected by privacy shields */}
+                  <span className="text-[9px] uppercase font-mono bg-muted/60 text-muted-foreground px-1.5 py-0.5 rounded font-black tracking-wider block mt-1">
+                    Shielded Profile
+                  </span>
                 </div>
               </div>
             ))

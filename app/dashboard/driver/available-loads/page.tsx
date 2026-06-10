@@ -24,7 +24,7 @@ export default function AvailableLoadsPage() {
   const [message, setMessage] = useState({ type: '', text: '' })
   
   const { data: loads, error, isLoading, mutate } = useSWR<OpenBooking[]>(
-    token ? `${BACKEND_BASE_URL}/api/bookings?role=driver` : null,
+    token ? '/api/bookings?role=driver' : null, // 👈 Strip out ${BACKEND_BASE_URL}
     authenticatedFetcher,
     { refreshInterval: 4000 } // Poll every 4 seconds for live sync
   )
@@ -44,21 +44,17 @@ export default function AvailableLoadsPage() {
 
       const data = await response.json()
       
+      if (!response.ok) {
+        // Surfaced directly from our backend route-matching constraints check
+        throw new Error(data.error || 'Failed to complete job offer action.')
+      }
+
       if (action === 'decline') {
-        setDeclinedJobIds((prev) => [...prev, id])
-        setMessage({ type: 'success', text: 'Job offer declined and removed from your active feed.' })
-        mutate()
-        return
+        setMessage({ type: 'success', text: 'Job offer successfully declined and returned to open marketplace pools.' })
+      } else {
+        setMessage({ type: 'success', text: 'Job offer accepted! Route contract assigned onto your workspace manifest.' })
       }
-
-      if (response.status === 410) {
-        setDeclinedJobIds((prev) => [...prev, id])
-        throw new Error("Job Taken! Another driver claimed this offer.")
-      }
-
-      if (!response.ok) throw new Error(data.error || 'Failed to complete job offer action.')
-
-      setMessage({ type: 'success', text: 'Job offer accepted! Trip generated under your My Trips workspace.' })
+      
       mutate()
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message || 'Execution mismatch failure.' })
@@ -77,8 +73,8 @@ export default function AvailableLoadsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64 text-muted-foreground font-mono">
-        <RefreshCw className="w-6 h-6 animate-spin mr-2 text-accent" /> 
+      <div className="flex justify-center items-center h-64 text-slate-400 font-mono text-xs">
+        <RefreshCw className="w-5 h-5 animate-spin mr-2 text-indigo-500" /> 
         STREAMING LIVE LOGISTICS MARKETPLACE...
       </div>
     )
@@ -96,54 +92,54 @@ export default function AvailableLoadsPage() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-foreground">Available Marketplace Offers</h2>
-          <p className="text-muted-foreground mt-1">Review live cargo haulage requests. Accept to claim or decline to hide them.</p>
+          <h2 className="text-3xl font-bold text-slate-100">Marketplace Load Offers</h2>
+          <p className="text-slate-400 text-xs font-mono mt-1">Review live anonymized cargo hauling demands. Claim routes to unlock shipper details.</p>
         </div>
-        <Button variant="outline" onClick={() => mutate()} className="border-border text-foreground">
-          <RefreshCw className="w-4 h-4 mr-1" /> Refresh Feed
+        <Button variant="outline" onClick={() => mutate()} className="border-slate-800 text-slate-300 hover:bg-slate-900 text-xs font-mono">
+          <RefreshCw className="w-3.5 h-3.5 mr-1" /> Force Refresh Feed
         </Button>
       </div>
 
       {message.text && (
-        <div className={`p-4 rounded-lg border text-sm flex items-center gap-2 ${
-          message.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' : 'bg-destructive/10 border-destructive/20 text-destructive'
+        <div className={`p-4 rounded-xl border text-xs font-mono flex items-center gap-2 ${
+          message.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-destructive/10 border-destructive/20 text-destructive'
         }`}>
-          {message.type === 'success' ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+          {message.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
           <span>{message.text}</span>
         </div>
       )}
 
       {activeAvailableLoads.length === 0 ? (
-        <div className="text-center py-12 border-2 border-dashed border-border rounded-xl bg-card">
-          <Box className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
-          <p className="text-foreground font-medium">The marketplace pipeline is currently empty</p>
-          <p className="text-muted-foreground text-sm mt-1">Waiting for an upstream shipper to upload a new load offer...</p>
+        <div className="text-center py-12 border-2 border-dashed border-slate-900 rounded-xl bg-slate-900/40">
+          <Box className="w-10 h-10 text-slate-600 mx-auto mb-3" />
+          <p className="text-slate-300 text-sm font-bold">Marketplace pipeline is empty</p>
+          <p className="text-slate-500 text-xs mt-1 font-mono">Waiting for downstream corporate shippers to publish new specifications...</p>
         </div>
       ) : (
         <div className="grid gap-4">
           {activeAvailableLoads.map((load) => (
-            <div key={load.id} className="bg-card border border-border rounded-xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all hover:border-accent/40">
+            <div key={load.id} className="bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all hover:border-indigo-500/40 shadow-xl">
               <div className="space-y-2">
-                <div className="flex items-center gap-2 font-bold text-lg text-foreground">
-                  <MapPin className="w-5 h-5 text-accent" />
+                <div className="flex items-center gap-2 font-bold text-base text-slate-200">
+                  <MapPin className="w-4 h-4 text-orange-500" />
                   <span>{load.origin}</span>
-                  <span className="text-muted-foreground font-normal">➔</span>
+                  <span className="text-slate-600 font-normal">➔</span>
                   <span>{load.destination}</span>
                 </div>
-                <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                  <span className="bg-primary/10 text-primary-foreground px-2 py-0.5 rounded font-mono font-medium">ID: #{load.id}</span>
+                <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
+                  <span className="bg-slate-950 text-slate-500 border border-slate-850 px-2 py-0.5 rounded font-mono font-bold">ID: #{load.id}</span>
                   <span>•</span>
-                  <span>Cargo classification: <strong className="text-foreground">{load.cargo}</strong></span>
+                  <span>Cargo: <strong className="text-slate-300">{load.cargo}</strong></span>
                   <span>•</span>
-                  <span>Mass Weight: <strong className="text-foreground">{load.weight}</strong></span>
+                  <span>Mass: <strong className="text-slate-300">{load.weight}</strong></span>
                 </div>
               </div>
 
-              <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-4 border-t md:border-0 pt-4 md:pt-0 border-border shrink-0">
-                <div className="flex items-center gap-0.5 text-2xl font-black text-foreground">
-                  <DollarSign className="w-5 h-5 text-accent shrink-0" />
+              <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-4 border-t md:border-0 pt-4 md:pt-0 border-slate-800 shrink-0">
+                <div className="flex items-center text-xl font-black text-slate-200">
+                  <DollarSign className="w-4 h-4 text-orange-500 shrink-0" />
                   <span>{load.price.replace(/[^0-9.]/g, '')}</span>
                 </div>
                 
@@ -151,16 +147,16 @@ export default function AvailableLoadsPage() {
                   <button 
                     onClick={() => handleJobAction(load.id, 'decline')}
                     disabled={actionId !== null}
-                    className="px-4 py-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded-lg text-sm font-medium transition cursor-pointer flex items-center gap-1.5"
+                    className="px-3 py-1.5 border border-red-500/20 bg-red-500/5 text-red-400 hover:bg-red-500/10 rounded-lg text-xs font-bold font-mono transition cursor-pointer"
                   >
-                    <XCircle className="w-4 h-4" /> Decline
+                    Decline
                   </button>
                   <Button 
                     onClick={() => handleJobAction(load.id, 'accept')}
                     disabled={actionId !== null}
-                    className="bg-accent hover:bg-accent/90 text-white font-bold px-5 cursor-pointer"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs h-8 px-4 cursor-pointer rounded-lg"
                   >
-                    {actionId === load.id ? 'Processing...' : 'Accept Offer'}
+                    {actionId === load.id ? 'Claiming...' : 'Accept Offer'}
                   </Button>
                 </div>
               </div>
