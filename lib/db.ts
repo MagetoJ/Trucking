@@ -8,7 +8,11 @@ declare global {
 }
 
 function createPrismaClient() {
-  const connectionString = process.env.DATABASE_URL || "postgresql://truck_hauling_user:KtKBjRlWuEfkJ1aglMvPLE6DWJyqqCKC@dpg-d8i368uq1p3s73e9ovpg-a.oregon-postgres.render.com/truck_hauling"
+  const connectionString = process.env.DATABASE_URL
+
+  if (!connectionString) {
+    throw new Error("DATABASE_URL environment variable is not set");
+  }
   
   const pool = new Pool({
     connectionString,
