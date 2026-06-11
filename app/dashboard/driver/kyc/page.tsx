@@ -3,13 +3,12 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { BACKEND_BASE_URL } from '@/lib/fetcher'
-import { useAuthStore, AuthState } from '@/lib/store' // Import AuthState
+import { useAuthStore } from '@/lib/store'
 import { Mail, ShieldCheck, FileText, Camera, CheckCircle, RefreshCw, AlertCircle } from 'lucide-react'
 
 export default function DriverKycOnboardingHub() {
-  // Explicitly type the state parameter for better type safety
-  const token = useAuthStore((state: AuthState) => state.token)
-  const user = useAuthStore((state: AuthState) => state.user)
+  const token = useAuthStore((state: any) => state.token)
+  const user = useAuthStore((state: any) => state.user)
   
   const [step, setStep] = useState(1)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -130,26 +129,18 @@ export default function DriverKycOnboardingHub() {
 
   return (
     <div className="grid lg:grid-cols-5 gap-6 max-w-6xl mx-auto items-start pb-12">
-      
-      {/* PHONE DRAWER SIMULATOR COMPONENT PANEL */}
       <div className="lg:col-span-2 flex justify-center">
         <div className="w-[315px] h-[630px] bg-slate-950 border-8 border-slate-900 rounded-[38px] shadow-2xl overflow-hidden flex flex-col relative">
-          
-          {/* Mock Screen Header Bar */}
           <div className="h-6 bg-slate-900 w-full flex justify-between items-center px-6 text-[9px] font-mono text-slate-400 select-none">
             <span>Carrier Secure</span>
             <div className="w-16 h-3 bg-black rounded-full mx-auto absolute left-0 right-0 top-1"></div>
             <span>Step {step}/7</span>
           </div>
-
-          {/* Core Interactive Screen Canvas viewport */}
           <div className="flex-1 p-5 space-y-4 flex flex-col justify-between bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950">
             <div>
-              {/* Load bearing responsive progress indicators */}
               <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden mb-5">
                 <div className="h-full bg-orange-500 transition-all duration-300" style={{ width: `${(step / 7) * 100}%` }}></div>
               </div>
-
               {step === 1 && (
                 <div className="space-y-4 text-center pt-6 animate-fade-in">
                   <Mail className="w-12 h-12 text-orange-500 mx-auto" />
@@ -161,7 +152,6 @@ export default function DriverKycOnboardingHub() {
                   </Button>
                 </div>
               )}
-
               {step === 2 && (
                 <div className="space-y-3 pt-2 animate-fade-in">
                   <h4 className="text-xs font-bold tracking-wide">Validate Secure Token Handshake</h4>
@@ -173,7 +163,6 @@ export default function DriverKycOnboardingHub() {
                   </Button>
                 </div>
               )}
-
               {step === 3 && (
                 <div className="space-y-4 text-center pt-4 animate-fade-in">
                   <FileText className="w-12 h-12 text-indigo-400 mx-auto" />
@@ -185,7 +174,6 @@ export default function DriverKycOnboardingHub() {
                   </Button>
                 </div>
               )}
-
               {step === 4 && (
                 <div className="space-y-3 pt-2 animate-fade-in">
                   <h4 className="text-xs font-bold">Log Fleet Carrier Attributes</h4>
@@ -196,7 +184,6 @@ export default function DriverKycOnboardingHub() {
                   </Button>
                 </div>
               )}
-
               {step === 5 && (
                 <div className="space-y-4 text-center pt-6 animate-fade-in">
                   <Camera className="w-12 h-12 text-teal-400 mx-auto" />
@@ -207,7 +194,6 @@ export default function DriverKycOnboardingHub() {
                   </Button>
                 </div>
               )}
-
               {step === 6 && (
                 <div className="space-y-4 text-center pt-6 animate-fade-in">
                   <ShieldCheck className="w-12 h-12 text-emerald-400 mx-auto" />
@@ -218,7 +204,6 @@ export default function DriverKycOnboardingHub() {
                   </Button>
                 </div>
               )}
-
               {step === 7 && (
                 <div className="space-y-4 text-center pt-10 animate-fade-in">
                   <CheckCircle className="w-12 h-12 text-orange-500 mx-auto" />
@@ -227,22 +212,16 @@ export default function DriverKycOnboardingHub() {
                 </div>
               )}
             </div>
-
             <p className="text-[8px] font-mono text-slate-500 text-center select-none">Powered by TruckHub Transactional Mailers</p>
           </div>
-
         </div>
       </div>
-
-      {/* RIGHT DIAGNOSTIC PANEL: REAL-TIME LIFECYCLE TELEMETRY WATCHERS */}
       <div className="lg:col-span-3 flex flex-col justify-between bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl min-h-[630px]">
         <div className="space-y-5">
           <div className="border-b border-slate-800 pb-3">
             <h2 className="text-xl font-black text-white">Ecosystem KYC Control Ledger</h2>
             <p className="text-xs text-slate-400 mt-1 font-mono">Observe automated background verification logs and database status updates live.</p>
           </div>
-
-          {/* Resiliency Override Controller Dashboard Box */}
           <div className="p-4 bg-slate-950 border border-slate-850 rounded-xl space-y-2">
             <h4 className="text-xs font-bold uppercase tracking-wide text-orange-400 flex items-center gap-1.5 font-mono">
               <AlertCircle className="w-4 h-4" /> Multi-Resiliency Recovery Matrix
@@ -266,8 +245,6 @@ export default function DriverKycOnboardingHub() {
             </div>
           </div>
         </div>
-
-        {/* Live Active Streaming Log Output Shell */}
         <div className="mt-4 flex-1 bg-slate-950 border border-slate-850 p-4 rounded-xl font-mono text-[11px] overflow-y-auto max-h-[220px] space-y-1.5 text-slate-300">
           <p className="text-slate-600 select-none">// Intercepting system telemetry actions pipeline hooks...</p>
           {telemetryLogs.map((log, index) => (
@@ -275,7 +252,6 @@ export default function DriverKycOnboardingHub() {
           ))}
         </div>
       </div>
-
     </div>
   )
 }
