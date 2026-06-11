@@ -1,4 +1,4 @@
-import { defineConfig } from 'prisma'
+import { defineConfig } from 'prisma/config'
 import dotenv from 'dotenv'
 
 dotenv.config()
