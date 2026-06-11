@@ -1,0 +1,27 @@
+{
+  "theme_color": "#0F3460",
+  "background_color": "#050814",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/dashboard",
+  "name": "TruckHub Logistics",
+  "short_name": "TruckHub",
+  "description": "Connect shippers with drivers for efficient freight delivery",
+  "icons": [
+    {
+      "src": "/icon-light-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-dark-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
