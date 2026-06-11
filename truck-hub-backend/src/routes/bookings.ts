@@ -4,11 +4,16 @@ import { db } from '../lib/db'
 
 const router = Router()
 
-// Utility function to generate system notifications
-async function createNotification(userId: string, title: string, message: string) {
+// Utility function to generate system notifications with optional action payload targets
+async function createNotification(userId: string, title: string, message: string, bookingId?: number) {
   try {
     await db.notification.create({
-      data: { userId, title, message }
+      data: { 
+        userId, 
+        title, 
+        message,
+        bookingId: bookingId || null
+      }
     });
   } catch (err) {
     console.error('Failed to write notification to database:', err);
@@ -56,10 +61,36 @@ function isLoadOnSameRoute(activeOrigin: string, activeDest: string, newOrigin: 
   }
 }
 
+// ── GET: READ USER NOTIFICATIONS LOG SHEET (RESOLVES DRIVER NOTIFICATION BLACKOUT) ──
+router.get('/notifications', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const notifications = await db.notification.findMany({
+      where: { userId: req.user!.id },
+      orderBy: { createdAt: 'desc' },
+      take: 25
+    });
+    return res.json(notifications);
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to retrieve notification streams.' });
+  }
+});
+
+// ── PATCH: MARK ALL CURRENT NOTIFICATIONS AS READ ──
+router.patch('/notifications/read-all', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    await db.notification.updateMany({
+      where: { userId: req.user!.id, isRead: false },
+      data: { isRead: true }
+    });
+    return res.json({ success: true });
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to batch clear user alert feed.' });
+  }
+});
+
 // ── GET: READ BOOKINGS MANIFEST WITH PRIVACY SHIELDS ──
 router.get('/', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
-  const userRole = req.user!.role.toUpperCase();
   const queryRole = (req.query.role as string) || req.user!.role.toLowerCase();
 
   try {
@@ -140,7 +171,8 @@ router.post('/', requireAuth, async (req: AuthenticatedRequest, res: Response) =
       await createNotification(
         driver.id,
         'New Load Broadcasted 📦',
-        `A load request from ${origin} to ${destination} is now open for bidding.`
+        `Route option available from ${origin} to ${destination}. Price: ${price}`,
+        newBooking.id
       );
     }
 

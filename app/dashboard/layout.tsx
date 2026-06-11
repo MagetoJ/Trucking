@@ -6,11 +6,11 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { 
-  Truck, Home, Map, Users, LogOut, Menu, X, Settings, Bell, // IMPORT BELL ICON
-  BarChart3, FileText, ShieldAlert, RefreshCw, Sun, Moon
+  Truck, Home, Map, Users, LogOut, Menu, X, Settings, Bell, 
+  BarChart3, FileText, ShieldAlert, RefreshCw, CheckCircle2, XCircle
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { authenticatedFetcher } from '@/lib/fetcher'
+import { BACKEND_BASE_URL, authenticatedFetcher } from '@/lib/fetcher'
 
 export default function DashboardLayout({
   children,
@@ -24,14 +24,43 @@ export default function DashboardLayout({
   const pathname = usePathname()
   
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [processingId, setProcessingId] = useState<number | null>(null)
+  const [notifiedIds, setNotifiedIds] = useState<string[]>([])
 
   /* Dynamic Live SWR Notifications Counter Icon Widget Component */
-  const { data: alerts } = useSWR<any[]>(
+  const { data: alerts, mutate: mutateNotifications } = useSWR<any[]>(
     token ? '/api/bookings/notifications' : null,
     authenticatedFetcher,
     { refreshInterval: 4000 }
   )
   const unreadCount = alerts?.filter(n => !n.isRead).length || 0
+
+  // Request browser desktop notification channel rights cleanly on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        Notification.requestPermission()
+      }
+    }
+  }, [])
+
+  // INTERCEPT DATA & DISPATCH TO NATIVE OS NOTIFICATION BAR
+  useEffect(() => {
+    if (alerts && alerts.length > 0) {
+      alerts.forEach((alert) => {
+        if (!alert.isRead && !notifiedIds.includes(alert.id)) {
+          setNotifiedIds((prev) => [...prev, alert.id])
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification(alert.title, {
+              body: alert.message,
+              icon: '/icon-light-32x32.png',
+              tag: alert.id 
+            })
+          }
+        }
+      })
+    }
+  }, [alerts, notifiedIds])
 
   // Automatically collapse sidebar drawer when changing pages on mobile screens
   useEffect(() => {
@@ -58,6 +87,43 @@ export default function DashboardLayout({
   const handleLogout = () => {
     logout()
     router.push('/auth/login')
+  }
+
+  const handleClearAllAlerts = async () => {
+    if (!token || unreadCount === 0) return
+    try {
+      await fetch(`${BACKEND_BASE_URL}/api/bookings/notifications/read-all`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      mutateNotifications()
+    } catch (err) {
+      console.error('Failed to mark entries as read:', err)
+    }
+  }
+
+  const handleDirectCargoAction = async (bookingId: number, action: 'accept' | 'decline') => {
+    setProcessingId(bookingId)
+    try {
+      const res = await fetch(`${BACKEND_BASE_URL}/api/bookings/${bookingId}/${action}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      if (!res.ok) {
+        const errData = await res.json()
+        alert(errData.error || 'Failed to complete quick action.')
+      } else {
+        mutateNotifications()
+        router.refresh()
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setProcessingId(null)
+    }
   }
 
   // Common navigation items
@@ -204,21 +270,47 @@ export default function DashboardLayout({
               )}
               </button>
             
-              <div className="absolute right-0 top-10 bg-slate-900 border border-slate-850 text-slate-200 p-4 w-72 rounded-xl shadow-2xl hidden group-hover:block z-50 space-y-2 animate-fade-in">
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-800 pb-1.5 font-mono">Ecosystem Event Log</p>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {!alerts || alerts.length === 0 ? (
-                  <p className="text-xs text-slate-500 italic py-2 text-center">No unread system notices.</p>
-                ) : (
-                  alerts.map((n) => (
-                    <div key={n.id} className="text-[11px] leading-tight border-b border-slate-850 pb-1.5 last:border-0 last:pb-0">
-                      <p className="font-bold text-slate-200">{n.title}</p>
-                      <p className="text-slate-400 mt-0.5 font-sans">{n.message}</p>
-                    </div>
-                  ))
-                )}
+              <div className="absolute right-0 top-10 bg-slate-900 border border-slate-850 text-slate-200 p-4 w-80 rounded-xl shadow-2xl hidden group-hover:block z-50 space-y-2 animate-fade-in">
+                <div className="flex justify-between items-center border-b border-slate-800 pb-1.5 font-mono text-[10px]">
+                  <p className="font-bold text-slate-500 uppercase tracking-wider">Ecosystem Event Log</p>
+                  {unreadCount > 0 && (
+                    <button onClick={handleClearAllAlerts} className="text-indigo-400 hover:text-indigo-300 font-bold cursor-pointer">
+                      Clear All
+                    </button>
+                  )}
+                </div>
+                <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                  {!alerts || alerts.length === 0 ? (
+                    <p className="text-xs text-slate-500 italic py-2 text-center">No system notices.</p>
+                  ) : (
+                    alerts.map((n) => (
+                      <div key={n.id} className={`text-[11px] leading-tight border-b border-slate-850 pb-2 mb-2 last:border-0 last:pb-0 ${!n.isRead ? 'bg-indigo-950/20 p-1.5 rounded border-l-2 border-l-orange-500' : ''}`}>
+                        <p className="font-bold text-slate-200">{n.title}</p>
+                        <p className="text-slate-400 mt-0.5 font-sans">{n.message}</p>
+                        
+                        {n.bookingId && user.role === 'driver' && !n.isRead && (
+                          <div className="flex items-center gap-2 mt-2 pt-1.5 border-t border-slate-800/60">
+                            <button
+                              disabled={processingId !== null}
+                              onClick={() => handleDirectCargoAction(n.bookingId, 'decline')}
+                              className="flex items-center gap-1 text-[10px] font-bold text-red-400 hover:text-red-300 bg-red-500/10 px-2 py-1 rounded cursor-pointer disabled:opacity-50"
+                            >
+                              <XCircle className="w-3 h-3" /> Decline
+                            </button>
+                            <button
+                              disabled={processingId !== null}
+                              onClick={() => handleDirectCargoAction(n.bookingId, 'accept')}
+                              className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded cursor-pointer disabled:opacity-50"
+                            >
+                              <CheckCircle2 className="w-3 h-3" /> {processingId === n.bookingId ? 'Claiming...' : 'Accept'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
-            </div>
           </div>
             
             <div className="w-px h-6 bg-slate-900"></div>
