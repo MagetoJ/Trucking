@@ -1,11 +1,7 @@
 [build]
   # This matches the build script in your package.json
-  command = "npm run build"
+  command = "pnpm run build"
   publish = ".next"
-
-[[plugins]]
-  # This plugin is required for Next.js App Router and SSR support on Netlify
-  package = "@netlify/plugin-nextjs"
 
 [build.environment]
   NODE_VERSION = "20"
