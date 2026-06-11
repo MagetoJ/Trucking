@@ -3,12 +3,13 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { BACKEND_BASE_URL } from '@/lib/fetcher'
-import { useAuthStore } from '@/lib/store'
+import { useAuthStore, AuthState } from '@/lib/store' // Import AuthState
 import { Mail, ShieldCheck, FileText, Camera, CheckCircle, RefreshCw, AlertCircle } from 'lucide-react'
 
 export default function DriverKycOnboardingHub() {
-  const token = useAuthStore((state: any) => state.token)
-  const user = useAuthStore((state: any) => state.user)
+  // Explicitly type the state parameter for better type safety
+  const token = useAuthStore((state: AuthState) => state.token)
+  const user = useAuthStore((state: AuthState) => state.user)
   
   const [step, setStep] = useState(1)
   const [isProcessing, setIsProcessing] = useState(false)

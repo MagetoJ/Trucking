@@ -75,9 +75,9 @@ export default function DashboardLayout({
   ]
 
   const driverItems = [
-    { icon: FileText, label: 'Marketplace Offers', href: '/dashboard/driver/available-loads' }, // Updated label
-    { icon: BarChart3, label: 'My Assigned Trips', href: '/dashboard/driver/my-trips' }, // Updated label
-    { icon: Settings, label: 'Earning Ledger', href: '/dashboard/driver/earnings' }, // Updated label
+    { icon: FileText, label: 'Marketplace Offers', href: '/dashboard/driver/available-loads' },
+    { icon: ShieldAlert, label: 'Driver KYC Portal', href: '/dashboard/driver/kyc' }, // Attached Onboarding Flow Node
+    { icon: BarChart3, label: 'My Assigned Trips', href: '/dashboard/driver/my-trips' },
   ]
 
   const adminItems = [

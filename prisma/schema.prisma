@@ -101,13 +101,41 @@ model SystemConfiguration {
 }
 
 model DriverDocument {
-  id             String   @id @default(uuid())
-  driverId       String   @unique
-  driver         User     @relation(fields: [driverId], references: [id], onDelete: Cascade)
-  licenseNumber  String
-  truckPlate     String
-  insuranceExpiry DateTime
-  status         String   @default("PENDING_REVIEW") // PENDING_REVIEW, APPROVED, REJECTED
+  id               String   @id @default(uuid())
+  driverId         String   @unique
+  driver           User     @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  
+  // Progressive Step Control
+  currentStep      Int      @default(1)
+  idNumberTyped    String   @default("")
+  idCardPhotoUrl   String   @default("")
+  ocrMatched       Boolean  @default(false)
+  ocrConfidence    Float    @default(0.0)
+  
+  // Vetting Metadata & Credentials
+  licenseNumber    String   @default("")
+  truckPlate       String   @default("")
+  insuranceExpiry  DateTime @default("2026-12-31T23:59:59.999Z")
+  insuranceFileUrl String   @default("")
+  
+  // Biometric Facial Rekognition Fields
+  selfiePhotoUrl   String   @default("")
+  faceMatchScore   Float    @default(0.0)
+  faceMatchPassed  Boolean  @default(false)
+  
+  // Payout Ledger Escrow Verifications
+  mpesaValidated   Boolean  @default(false)
+  mpesaCheckoutId  String   @default("")
+  
+  // Resilient Node State Parameters for Single Re-uploads
+  idCardStatus     String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  licenseStatus    String   @default("PENDING")
+  insuranceStatus  String   @default("PENDING")
+  selfieStatus     String   @default("PENDING")
+  
+  status           String   @default("PENDING_REVIEW") // PENDING_REVIEW, APPROVED, REJECTED
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model AuditTrail {
