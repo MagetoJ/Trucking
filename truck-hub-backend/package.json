@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "description": "Standalone Node.js Express Backend for TruckHub Platform",
   "main": "dist/server.js",
-  "scripts": {
-    "build": "tsc",
-    "start": "node dist/server.js",
-    "dev": "tsx watch src/server.ts",
-    "postbuild": "npx prisma db push"
-  },
+"scripts": {
+  "build": "npx prisma generate && tsc",
+  "start": "node dist/server.js",
+  "dev": "tsx watch src/server.ts",
+  "postbuild": "npx prisma db push"
+},
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",

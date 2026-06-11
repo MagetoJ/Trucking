@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // CRITICAL FIX: The "url" parameter has been removed from here to satisfy Prisma 7 rules
 }
 
 enum Role {
@@ -46,6 +45,7 @@ model User {
   shipments         Booking[]     @relation("ShipperBookings")
   trips             Booking[]     @relation("DriverTrips")
   vehicles          Vehicle[]
+  documents         DriverDocument?
 }
 
 model Vehicle {
@@ -116,4 +116,14 @@ model Notification {
   message    String
   isRead     Boolean  @default(false)
   createdAt  DateTime @default(now())
+}
+
+model DriverDocument {
+  id              String   @id @default(uuid())
+  driverId        String   @unique
+  driver          User     @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  licenseNumber   String
+  truckPlate      String
+  insuranceExpiry DateTime
+  status          String   @default("PENDING_REVIEW") // PENDING_REVIEW, APPROVED, REJECTED
 }
