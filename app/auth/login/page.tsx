@@ -126,13 +126,6 @@ export default function LoginPage() {
             </Button>
           </Link>
         </form>
-
-        {/* Demo Credentials */}
-        <div className="mt-8 bg-primary/20 border border-primary/40 rounded-lg p-4 text-center text-sm text-primary/80">
-          <p className="font-semibold mb-2">Demo Credentials</p>
-          <p>Shipper: +254712345678 / password</p>
-          <p>Driver: +254712345679 / password</p>
-        </div>
       </div>
     </div>
   )

@@ -116,7 +116,10 @@ router.get('/', requireAuth, async (req: AuthenticatedRequest, res: Response) =>
         where: {
           OR: [
             { driverId: userId },
-            { status: 'PENDING' }
+            { 
+              status: 'PENDING',
+              driverId: null // Only show public loads in the open marketplace
+            }
           ]
         },
         include: {
@@ -146,7 +149,7 @@ router.get('/', requireAuth, async (req: AuthenticatedRequest, res: Response) =>
 
 // ── POST: SHIPPER BROADCASTS FRESH HAULAGE DEMANDS ──
 router.post('/', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
-  const { origin, destination, cargo, weight, price } = req.body
+  const { origin, destination, cargo, weight, price, goodsType, isFragile, driverId } = req.body
 
   if (!origin || !destination || !cargo || !weight || !price) {
     return res.status(400).json({ error: 'Missing core cargo manifest requirements.' })
@@ -161,24 +164,74 @@ router.post('/', requireAuth, async (req: AuthenticatedRequest, res: Response) =
         cargo,
         weight: weight.toString().includes('kg') ? weight : `${weight} kg`,
         price: price.toString().includes('$') ? price : `$${price}`,
+        goodsType: goodsType || 'GENERAL_CARGO',
+        isFragile: isFragile === true,
+        driverId: driverId || null,
         status: 'PENDING',
         date: new Date().toISOString().split('T')[0]
       }
     })
 
-    const drivers = await db.user.findMany({ where: { role: 'DRIVER' } });
-    for (const driver of drivers) {
+    if (driverId) {
+      // Direct Assignment: Notify only the target driver
       await createNotification(
-        driver.id,
-        'New Load Broadcasted 📦',
-        `Route option available from ${origin} to ${destination}. Price: ${price}`,
+        driverId,
+        'Direct Load Offer 🎯',
+        `You have received a direct load offer from ${origin} to ${destination}. Price: ${price}`,
         newBooking.id
       );
+    } else {
+      // Public Broadcast: Notify all drivers
+      const drivers = await db.user.findMany({ where: { role: 'DRIVER' } });
+      for (const driver of drivers) {
+        await createNotification(
+          driver.id,
+          'New Load Broadcasted 📦',
+          `Route option available from ${origin} to ${destination}. Price: ${price}`,
+          newBooking.id
+        );
+      }
     }
 
     return res.status(201).json(newBooking)
   } catch (error) {
     return res.status(500).json({ error: 'Failed to commit booking into database.' })
+  }
+})
+
+// ── PUT: SHIPPER MODIFIES EXISTING LOAD SPECIFICATIONS ──
+router.put('/:id', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  const bookingId = parseInt(req.params.id, 10);
+  const { origin, destination, cargo, weight, price, goodsType, isFragile } = req.body;
+
+  try {
+    const booking = await db.booking.findUnique({ where: { id: bookingId } });
+    
+    if (!booking || booking.shipperId !== req.user!.id) {
+      return res.status(403).json({ error: 'Unauthorized or target haulage entry not found.' });
+    }
+
+    if (booking.status !== 'PENDING') {
+      return res.status(400).json({ error: 'Specifications can only be modified while the load is PENDING driver acceptance.' });
+    }
+
+    const updatedBooking = await db.booking.update({
+      where: { id: bookingId },
+      data: {
+        origin,
+        destination,
+        cargo,
+        weight: weight.toString().includes('kg') ? weight : `${weight} kg`,
+        price: price.toString().includes('$') ? price : `$${price}`,
+        goodsType,
+        isFragile: isFragile === true
+      }
+    });
+
+    return res.json(updatedBooking);
+  } catch (error) {
+    console.error('Update operation failed:', error);
+    return res.status(500).json({ error: 'Failed to update cargo attributes on the database ledger.' });
   }
 })
 

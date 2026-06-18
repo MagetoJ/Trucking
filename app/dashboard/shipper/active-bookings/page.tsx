@@ -15,6 +15,8 @@ interface Booking {
   cargo: string
   weight: string
   price: string
+  goodsType: string
+  isFragile: boolean
   status: 'PENDING' | 'ACCEPTED' | 'PICKED_UP' | 'IN_TRANSIT' | 'COMPLETED' | 'CANCELLED'
   progress: number
   eta: string
@@ -127,7 +129,17 @@ export default function ActiveBookingsPage() {
                   <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                     <span className="bg-muted text-foreground px-2 py-0.5 rounded font-mono font-medium">ID: #{booking.id}</span>
                     <span>•</span>
-                    <span>Cargo: <strong className="text-foreground">{booking.cargo}</strong> ({booking.weight})</span>
+                    <span className="flex items-center gap-2">
+                      Cargo: <strong className="text-foreground">{booking.cargo}</strong> ({booking.weight})
+                      <span className="bg-accent/10 text-accent px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight">
+                        {booking.goodsType.replace('_', ' ')}
+                      </span>
+                      {booking.isFragile && (
+                        <span className="bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded text-[10px] font-bold flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" /> FRAGILE
+                        </span>
+                      )}
+                    </span>
                     <span>•</span>
                     <span>Posted Date: {booking.date}</span>
                   </div>

@@ -8,6 +8,7 @@ import authRouter from './routes/auth'
 import adminRouter from './routes/admin'
 import adminDashboardRouter from './routes/adminDashboard'
 import kycRouter from './routes/kyc'
+import walletRoutes from './routes/wallet';
 
 dotenv.config()
 
@@ -34,6 +35,7 @@ app.use('/api/bookings', bookingRouter)
 app.use('/api/admin', adminRouter)
 app.use('/api/admin-dashboard', adminDashboardRouter)
 app.use('/api/kyc', kycRouter)
+app.use('/api/wallet', walletRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'healthy', platform: 'TruckHub Engine' })

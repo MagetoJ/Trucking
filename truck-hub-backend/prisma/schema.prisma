@@ -28,6 +28,22 @@ enum EscrowStatus {
   REFUNDED
 }
 
+enum DriverTier {
+  BRONZE
+  SILVER
+  GOLD
+  ELITE
+}
+
+enum GoodsType {
+  ELECTRONICS
+  FURNITURE
+  AGRICULTURE
+  HAZARDOUS
+  TEXTILES
+  GENERAL_CARGO
+}
+
 model User {
   id                String        @id @default(uuid())
   phone             String        @unique
@@ -41,11 +57,51 @@ model User {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   
+  // Gamification & Tiers
+  driverTier     DriverTier @default(BRONZE)
+  loyaltyPoints  Int        @default(0)
+  badges         String[]   @default([])
+  
+  // Digital Business Card Identity
+  profileSlug    String?    @unique
+  bio            String?
+
   // Relations
   shipments         Booking[]     @relation("ShipperBookings")
   trips             Booking[]     @relation("DriverTrips")
   vehicles          Vehicle[]
   documents         DriverDocument?
+  wallet         Wallet?
+  
+  // Relations for Preferred Drivers
+  preferredDrivers PreferredDriver[] @relation("ShipperPreferences")
+  favoritedBy      PreferredDriver[] @relation("FavoritedBy")
+}
+
+model PreferredDriver {
+  id        Int      @id @default(autoincrement())
+  shipperId String   
+  driverId  String   
+  createdAt DateTime @default(now())
+
+  shipper   User     @relation("ShipperPreferences", fields: [shipperId], references: [id])
+  driver    User     @relation("FavoritedBy", fields: [driverId], references: [id])
+
+  // A shipper can only favorite a specific driver once
+  @@unique([shipperId, driverId]) 
+}
+
+model Wallet {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balance       Decimal  @db.Decimal(10, 2) @default(0.00)
+  currency      String   @default("USD")
+  
+  payoutMethod  String?
+  payoutAccount String?
+  
+  updatedAt     DateTime @updatedAt
 }
 
 model Vehicle {
@@ -58,6 +114,20 @@ model Vehicle {
   status     String    @default("ACTIVE") 
   createdAt  DateTime  @default(now())
   bookings   Booking[]
+  maintenanceRecords VehicleMaintenance[]
+}
+
+model VehicleMaintenance {
+  id            String    @id @default(uuid())
+  vehicleId     String
+  vehicle       Vehicle   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  serviceType   String
+  cost          Decimal   @db.Decimal(10, 2)
+  currency      String    @default("USD")
+  serviceDate   DateTime  @default(now())
+  nextServiceAt DateTime?
+  receiptUrl    String?
+  notes         String?
 }
 
 model Booking {
@@ -73,7 +143,9 @@ model Booking {
   destination String
   cargo       String
   weight      String
-  price       String        
+  price       String
+  goodsType   GoodsType     @default(GENERAL_CARGO)
+  isFragile   Boolean       @default(false)
   status      BookingStatus @default(PENDING)
   progress    Int           @default(0)
   eta         String        @default("TBD")
@@ -82,6 +154,19 @@ model Booking {
   updatedAt   DateTime      @updatedAt
 
   escrow      EscrowTransaction? 
+
+  // Records Vault Fields
+  proofOfPickupUrl   String?   
+  proofOfDeliveryUrl String?   
+  receiptUrl         String?   
+  
+  // Smart Repeat Booking helper
+  isRecurring        Boolean   @default(false)
+  recurringFrequency String?   // e.g., "WEEKLY", "MONTHLY"
+  
+  // Post-trip driver rating
+  driverRating       Int?      
+  ratingFeedback     String?
 }
 
 model EscrowTransaction {

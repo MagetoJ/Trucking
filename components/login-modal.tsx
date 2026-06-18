@@ -120,13 +120,6 @@ export default function LoginModal({ isOpen, onClose, onToggleView }: LoginModal
             </Button>
           </form>
 
-          {/* Inline Demo Credentials Hint Card matching app rules */}
-          <div className="mt-4 bg-muted/60 border border-border rounded-lg p-2.5 text-center text-[11px] text-muted-foreground">
-            <p className="font-semibold mb-1 text-foreground">Quick Demo Credentials</p>
-            <p>Shipper: +254712345678 / password</p>
-            <p>Driver: +254712345679 / password</p>
-          </div>
-
           {/* Panel Toggle Switch View Trigger */}
           <p className="text-center text-xs text-muted-foreground mt-5">
             New to TruckHub?{' '}

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { BACKEND_BASE_URL } from '@/lib/fetcher' // Import BACKEND_BASE_URL
 import { useAuthStore } from '@/lib/store'
-import { MapPin, Package, Truck, DollarSign, AlertCircle, Edit3, PlusCircle } from 'lucide-react'
+import { MapPin, Package, Truck, DollarSign, AlertCircle, Edit3, PlusCircle, LayoutList } from 'lucide-react'
 
 function PostLoadFormContent() {
   const router = useRouter()
@@ -14,6 +14,7 @@ function PostLoadFormContent() {
   
   // Detect if an edit context exists via Query parameter `?edit=bookingId`
   const editBookingId = searchParams.get('edit')
+  const preferredDriverId = searchParams.get('preferredDriverId') // <-- Add this
   const isEditMode = !!editBookingId
 
   const [error, setError] = useState('')
@@ -25,6 +26,8 @@ function PostLoadFormContent() {
     description: '',
     weight: '',
     price: '',
+    goodsType: 'GENERAL_CARGO', 
+    isFragile: false,
   })
 
   // Optional simulation layer: populate parameters if user requests an edit from active tables
@@ -38,12 +41,22 @@ function PostLoadFormContent() {
         description: 'Heavy electronic components shipment machinery parts',
         weight: '4500',
         price: '550',
+        goodsType: 'ELECTRONICS', // Added to simulation
+        isFragile: true,          // Added to simulation
       })
     }
   }, [isEditMode, editBookingId])
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+  // 2. UPDATED to handle both standard inputs/selects and checkboxes
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setFormData({ ...formData, [name]: checked });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,7 +82,10 @@ function PostLoadFormContent() {
           destination: formData.destination,
           cargo: formData.description,
           weight: formData.weight,
-          price: formData.price
+          price: formData.price,
+          goodsType: formData.goodsType,
+          isFragile: formData.isFragile,
+          driverId: preferredDriverId || null // Simplified logic
         }),
       })
 
@@ -141,6 +157,35 @@ function PostLoadFormContent() {
           </div>
         </div>
 
+        {/* 4. NEW: Goods Type Dropdown */}
+        <div>
+          <label className="block text-sm font-semibold text-foreground mb-2">
+            <LayoutList className="w-4 h-4 inline mr-2 text-accent" /> Goods Category
+          </label>
+          <div className="relative">
+            <select
+              name="goodsType"
+              value={formData.goodsType}
+              onChange={handleChange}
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-100 placeholder:text-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm font-medium transition-all appearance-none cursor-pointer"
+              required
+            >
+              <option value="GENERAL_CARGO">General Cargo</option>
+              <option value="ELECTRONICS">Electronics</option>
+              <option value="FURNITURE">Furniture</option>
+              <option value="AGRICULTURE">Agricultural Products</option>
+              <option value="HAZARDOUS">Hazardous Materials</option>
+              <option value="TEXTILES">Textiles & Garments</option>
+            </select>
+            {/* Custom dropdown arrow for better UI */}
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+              <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
         <div>
           <label className="block text-sm font-semibold text-foreground mb-2">
             <Package className="w-4 h-4 inline mr-2 text-accent" /> Cargo Content Details
@@ -183,6 +228,22 @@ function PostLoadFormContent() {
               required
             />
           </div>
+        </div>
+
+        {/* 5. NEW: Fragile Checkbox toggle */}
+        <div className="flex items-center space-x-3 bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+          <input
+            type="checkbox"
+            name="isFragile"
+            id="isFragile"
+            checked={formData.isFragile}
+            onChange={handleChange}
+            className="w-5 h-5 rounded border-slate-700 bg-slate-950 text-accent focus:ring-accent focus:ring-offset-slate-950 cursor-pointer accent-indigo-500"
+          />
+          <label htmlFor="isFragile" className="text-sm font-semibold text-slate-200 cursor-pointer flex items-center select-none">
+            <AlertCircle className={`w-5 h-5 inline mr-2 transition-colors ${formData.isFragile ? 'text-amber-500' : 'text-slate-500'}`} />
+            These goods are fragile and require delicate handling
+          </label>
         </div>
 
         {/* POST / UPDATE BUTTON SUBMIT AREA - Highly Visible */}
